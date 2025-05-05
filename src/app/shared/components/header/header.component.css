@@ -1,0 +1,174 @@
+/* Importa la fuente Oxanium con los pesos Regular(400) y Bold(700) */
+@import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@400;700&display=swap');
+
+.app-header {
+    /* Layout Principal */
+    align-items: center;
+    justify-content: space-between;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+
+    /* Estilos base de fuente y color */
+    font-family: 'Oxanium', sans-serif;
+    /* Fuente base */
+    color: #ffffff;
+    /* Color de texto base */
+}
+
+.header__inner {
+    /* Centra el bloque si la ventana > max-width */
+    padding: 1rem 2rem;
+    /* Espaciado interno */
+    width: 100%;
+    /* Intenta ocupar el 100% del espacio disponible hasta max-width */
+    box-sizing: border-box;
+    /* Asegura que padding se incluya en el width */
+
+    /* Flexbox Layout */
+    display: flex;
+    align-items: center;
+    /* Alinea verticalmente al centro */
+    justify-content: space-between;
+    /* !!! CLAVE: Distribuye los hijos: 1ro a la izq, último a la der */
+}
+
+/* Estilos del Logo */
+.logo a {
+    font-weight: 700;
+    /* Oxanium Bold */
+    font-size: 36px;
+    /* Tamaño del logo, ajusta si es necesario */
+    color: inherit;
+    /* Hereda el color blanco de .app-header */
+    text-decoration: none;
+    text-transform: uppercase;
+    /* Como en el mock */
+}
+
+
+/* Contenedor de Navegación - SOLO con Blur */
+.navigation {
+
+    /* MANTIENES el backdrop-filter para el efecto blur */
+    backdrop-filter: blur(-8px);
+    /* Ajusta la intensidad del desenfoque */
+    -webkit-backdrop-filter: blur(8px);
+    /* Para compatibilidad con Safari */
+
+    /* MANTIENES el padding y border-radius si los quieres */
+    padding: 12px 30px;
+}
+
+/* Los estilos para .nav-links y .nav-links a permanecen igual */
+.nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 35px;
+}
+
+.nav-links a {
+    font-family: 'Oxanium', sans-serif;
+    font-weight: 400;
+    font-size: 18px;
+    color: #ffffff;
+    /* Asegúrate que el color del texto contraste bien */
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: opacity 0.3s ease;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    opacity: 0.75;
+}
+
+/* Contenedor de Acciones */
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    /* Espacio entre botón y avatar, ajusta si es necesario */
+}
+
+/* Estilos base del botón */
+.btn-connect-styled {
+    position: relative;
+    /* Necesario para posicionar los pseudo-elementos */
+    display: inline-block;
+    /* O block, según necesites */
+    padding: 10px 25px;
+    /* Ajusta el padding (más espacio horizontal para las barras) */
+    background: #AD1AAF;
+    /* El color púrpura del mock (ajusta si es otro) */
+    color: #ffffff;
+    border: none;
+    font-family: 'Oxanium', sans-serif;
+    /* Asegúrate de usar la fuente correcta */
+    font-size: 18px;
+    cursor: pointer;
+    text-transform: none;
+    /* O uppercase si lo prefieres */
+    transition: opacity 0.3s ease;
+    /* Importante: permite que los pseudo-elementos se vean fuera */
+    overflow: visible;
+    z-index: 1;
+    /* Asegura que el botón esté sobre elementos base */
+}
+
+.btn-connect-styled:hover {
+    opacity: 0.85;
+}
+
+/* Estilos comunes para las barras laterales (pseudo-elementos) */
+.btn-connect-styled::before,
+.btn-connect-styled::after {
+    content: '';
+    /* Requerido para que se muestren */
+    position: absolute;
+    /* Posicionamiento relativo al botón */
+    background: #AD1AAF;
+    /* Mismo color del botón o uno ligeramente diferente si prefieres */
+    width: 4px;
+    /* Ancho de las barras laterales */
+    /* Hacen que la barra sea un poco más alta que el botón */
+    top: -4px;
+    bottom: -4px;
+    border-radius: 1px;
+    /* Un ligero redondeo si quieres */
+    z-index: -1;
+    /* Coloca las barras detrás del texto del botón si es necesario */
+}
+
+/* Barra lateral izquierda */
+.btn-connect-styled::before {
+    left: -8px;
+    /* Posición a la izquierda del padding del botón */
+}
+
+/* Barra lateral derecha */
+.btn-connect-styled::after {
+    right: -8px;
+    /* Posición a la derecha del padding del botón */
+}
+
+/* Avatar del Usuario */
+.avatar {
+    width: 45px;
+    /* Tamaño del avatar */
+    height: 45px;
+    border-radius: 50%;
+    /* Círculo perfecto */
+    border: 2px solid #ffffff;
+    /* Borde blanco */
+    object-fit: cover;
+    /* Asegura que la imagen cubra el área */
+    display: block;
+    /* Evita espacio extra debajo si es inline */
+}

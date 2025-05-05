@@ -1,0 +1,185 @@
+.hero {
+    position: relative;
+    width: 100%;
+    height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.hero .overlay {
+    position: absolute;
+    inset: 0;
+    background: url('/assets/wave-overlay.png') center bottom no-repeat;
+    background-size: cover;
+    pointer-events: none;
+    opacity: 0.2;
+}
+
+.hero .container {
+    position: relative;
+    z-index: 1;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.hero-text {
+    max-width: 600px;
+    color: #fff;
+}
+
+.hero-text .title {
+    font-family: 'Oxanium', sans-serif;
+    font-size: 3rem;
+    line-height: 1;
+    font-weight: 578;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+}
+
+.hero-text .subtitle {
+    font-family: 'Lato', sans-serif;
+    font-size: 1.125rem;
+    margin-bottom: 2rem;
+    opacity: 0.8;
+}
+
+.hero-text .buttons {
+    display: flex;
+    gap: 2.5rem;
+}
+
+.btn {
+    display: inline-block;
+    text-decoration: none;
+    font-family: 'Oxanium', sans-serif;
+    font-size: medium;
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    transition: transform .2s;
+    overflow: visible;
+    z-index: 1;
+    position: relative;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.btn.primary {
+    background: #AD1AAF;
+    color: #fff;
+
+}
+
+.btn.outline {
+    border: 2px solid #AD1AAF;
+    color: #fff;
+}
+
+
+.btn:hover {
+    opacity: 0.85;
+}
+
+/* Estilos comunes para las barras laterales (pseudo-elementos) */
+.btn::before,
+.btn::after {
+    content: '';
+    /* Requerido para que se muestren */
+    position: absolute;
+    /* Posicionamiento relativo al botón */
+    background: #AD1AAF;
+    /* Mismo color del botón o uno ligeramente diferente si prefieres */
+    width: 4px;
+    /* Ancho de las barras laterales */
+    /* Hacen que la barra sea un poco más alta que el botón */
+    top: -4px;
+    bottom: -4px;
+    border-radius: 1px;
+    /* Un ligero redondeo si quieres */
+    z-index: -1;
+    /* Coloca las barras detrás del texto del botón si es necesario */
+}
+
+/* Barra lateral izquierda */
+.btn::before {
+    left: -8px;
+    /* Posición a la izquierda del padding del botón */
+}
+
+/* Barra lateral derecha */
+.btn::after {
+    right: -8px;
+    /* Posición a la derecha del padding del botón */
+}
+
+
+.hero-image img {
+    max-width: 400px;
+    width: 100%;
+    display: block;
+    animation: floatAnimation 4s ease-in-out infinite;
+    /* Animación sutil */
+}
+
+/* Animación flotante */
+@keyframes floatAnimation {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+/* --- Responsive --- */
+@media (max-width: 992px) {
+    .hero-container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .hero-content,
+    .hero-image {
+        max-width: 80%;
+    }
+
+    .hero-content .subtitle {
+        max-width: 100%;
+    }
+
+    .buttons {
+        justify-content: center;
+    }
+
+    .hero-image {
+        margin-top: 40px;
+        max-width: 60%;
+        /* Reduce un poco la imagen en tablet */
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 120px 0 80px;
+    }
+
+    .hero-content,
+    .hero-image {
+        max-width: 100%;
+    }
+
+    .hero-image {
+        max-width: 70%;
+    }
+}
