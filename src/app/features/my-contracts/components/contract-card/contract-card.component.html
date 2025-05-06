@@ -1,0 +1,24 @@
+<div class="card-header">
+    <h3 class="card-title" title="{{ contract.title }}">{{ contract.title }}</h3>
+    <div class="card-actions">
+        <button class="icon-btn" title="Copiar Dirección" (click)="onCopyAddressClick($event)">
+            <img src="assets/icons/download.svg" alt="Copiar">
+        </button>
+        <button class="icon-btn" title="Compartir" (click)="onShareClick($event)">
+            <img src="/assets/icons/share.svg" alt="Compartir">
+        </button>
+    </div>
+</div>
+
+<div class="card-status">
+    <span class="status-badge" [ngClass]="getStatusClass(contract.status)">
+        {{ contract.status }}
+    </span>
+</div>
+
+<div class="card-details">
+    <p>{{ contract.date }}</p>
+    <p class="address" title="{{ contract.address }}">{{ contract.address }}</p>
+</div>
+
+<button class="btn-details" type="button" (click)="onViewDetailsClick()">Ver Detalles</button>

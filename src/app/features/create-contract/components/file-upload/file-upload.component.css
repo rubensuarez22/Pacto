@@ -27,8 +27,6 @@
     transition: background-color 0.3s ease, border-color 0.3s ease;
     cursor: pointer;
     /* Indica que se puede hacer clic/arrastrar */
-    margin-right: 30px;
-    margin-left: 30px;
 }
 
 /* Estilo opcional para cuando se arrastra un archivo sobre el área */
@@ -43,7 +41,7 @@
     width: 55px;
     /* Tamaño del icono */
     height: auto;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     /* Espacio debajo del icono */
     opacity: 0.5;
     /* Icono algo tenue */

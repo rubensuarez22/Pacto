@@ -1,0 +1,156 @@
+/* Estilos específicos para ContractsToolbarComponent */
+:host {
+    display: block;
+    /* El componente ocupa espacio */
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    /* Permite envolver en pantallas pequeñas */
+    justify-content: space-between;
+    /* Espacio entre búsqueda y filtros */
+    align-items: center;
+    gap: 20px;
+    /* Espacio general */
+    background-color: rgba(42, 26, 64, 0.3);
+    /* Fondo oscuro translúcido */
+    padding: 15px 25px;
+    border-radius: 10px;
+    /* Esquinas redondeadas */
+    margin-bottom: 40px;
+    /* Espacio antes de la cuadrícula */
+    border: 1px solid rgba(90, 58, 126, 0.3);
+    /* Borde sutil */
+}
+
+/* --- Barra de Búsqueda --- */
+.search-bar {
+    display: flex;
+    align-items: center;
+    background-color: rgba(20, 12, 31, 0.5);
+    /* Fondo interior */
+    padding: 8px 15px;
+    border-radius: 6px;
+    border: 1px solid #5a3a7e;
+    /* Borde morado sutil */
+    flex-grow: 1;
+    /* Ocupa espacio disponible */
+    min-width: 250px;
+    /* Ancho mínimo */
+    max-width: 450px;
+    /* Ancho máximo */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.search-bar:focus-within {
+    /* Estilo cuando el input tiene foco */
+    border-color: #AD1AAF;
+    box-shadow: 0 0 8px rgba(173, 26, 175, 0.3);
+}
+
+.search-icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 12px;
+    /* Espacio entre icono y texto */
+    opacity: 0.6;
+    flex-shrink: 0;
+}
+
+.search-bar input {
+    flex-grow: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: #ffffff;
+    font-family: 'Oxanium', sans-serif;
+    font-size: 0.95rem;
+    width: 100%;
+}
+
+.search-bar input::placeholder {
+    color: #a0a0a0;
+    opacity: 1;
+}
+
+/* --- Filtros --- */
+.filters {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    /* Espacio entre botones de filtro */
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    background-color: rgba(20, 12, 31, 0.7);
+    /* Fondo oscuro para botones */
+    border: 1px solid #5a3a7e;
+    /* Borde morado sutil */
+    color: #cccccc;
+    /* Texto gris claro */
+    padding: 9px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Oxanium', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: inline-flex;
+    /* Usa inline-flex para alinear texto e icono/flecha */
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    white-space: nowrap;
+    /* Evita que el texto del botón se parta */
+}
+
+.filter-btn:hover {
+    background-color: rgba(42, 26, 64, 0.8);
+    border-color: #7c5a9e;
+    color: #fff;
+}
+
+/* Flecha hacia abajo (puedes usar un icono SVG real) */
+.filter-btn .arrow-down {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid currentColor;
+    /* Usa el color del texto */
+    margin-left: 5px;
+    /* Espacio respecto al texto "Estado" o "Fecha" */
+}
+
+/* Botón de filtro con icono */
+.filter-icon-btn img {
+    width: 16px;
+    height: 16px;
+    opacity: 0.8;
+    /* El gap ya da espacio, no se necesita margen */
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .toolbar {
+        flex-direction: column;
+        /* Apilar en móvil */
+        align-items: stretch;
+    }
+
+    .search-bar {
+        max-width: none;
+        /* Ocupar todo el ancho */
+        width: 100%;
+        box-sizing: border-box;
+        /* Incluir padding/border en el ancho */
+    }
+
+    .filters {
+        justify-content: center;
+        /* Centrar los botones de filtro */
+        width: 100%;
+    }
+}

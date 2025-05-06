@@ -1,0 +1,39 @@
+/* Estilos para ContractsGridComponent */
+:host {
+    display: block;
+    /* Asegura que ocupe espacio */
+    /* Una altura mínima por si el estado vacío o de carga necesita espacio */
+    min-height: 250px;
+    position: relative;
+    /* Contexto por si necesitas posicionar algo absoluto dentro */
+}
+
+.contracts-grid {
+    display: grid;
+    /* Crea columnas que intentan medir 300px como mínimo,
+       y se reparten el espacio sobrante (1fr).
+       Se ajusta automáticamente el número de columnas según el ancho disponible. */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    /* Espacio entre las tarjetas */
+}
+
+.loading-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 250px;
+    /* Coincide con :host min-height */
+    color: #cccccc;
+    font-family: 'Oxanium', sans-serif;
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+/* Ajustes responsive opcionales para la cuadrícula si son necesarios */
+/* @media (max-width: 768px) {
+    .contracts-grid {
+       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+       gap: 20px;
+    }
+  } */

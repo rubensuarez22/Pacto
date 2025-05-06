@@ -1,0 +1,24 @@
+<div class="toolbar">
+    <div class="search-bar">
+        <img src="assets/icons/search.svg" alt="Buscar" class="search-icon">
+        <input type="text" placeholder="Buscar contratos..." aria-label="Buscar contratos"
+            (input)="onSearchInput($event)">
+    </div>
+
+    <div class="filters">
+        <button type="button" class="filter-btn" (click)="onStatusClick()">
+            <span>Estado</span>
+            <span class="arrow-down"></span>
+        </button>
+
+        <button type="button" class="filter-btn" (click)="onDateClick()">
+            <span>Fecha</span>
+            <span class="arrow-down"></span>
+        </button>
+
+        <button type="button" class="filter-btn filter-icon-btn" (click)="onFiltersClick()">
+            <img src="assets/icons/filter.svg" alt="Filtros">
+            <span>Filtros</span>
+        </button>
+    </div>
+</div>
