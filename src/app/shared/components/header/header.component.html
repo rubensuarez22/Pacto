@@ -5,9 +5,9 @@
                 PACTO
             </a>
         </div>
-
+        
         <nav class="navigation">
-            <ul class="nav-links">
+             <ul class="nav-links">
                 <li>
                     <a routerLink="/explora" routerLinkActive="active">Explora</a>
                 </li>
@@ -21,8 +21,31 @@
         </nav>
 
         <div class="actions">
-            <button class="btn-connect-styled" type="button">Conectarse</button>
-            <img class="avatar" src="assets/avatar-placeholder.jpg" alt="User Avatar">
+            <ng-container *ngIf="!(isConnected$ | async); else connectedState">
+                <button
+                    class="btn-connect-styled"
+                    type="button"
+                    (click)="connect()"
+                    [disabled]="(isConnecting$ | async) || !(isMetaMaskInstalled$ | async)">
+                    <span *ngIf="(isConnecting$ | async)">Conectando...</span>
+                    <span *ngIf="!(isConnecting$ | async) && (isMetaMaskInstalled$ | async)">Conectarse</span>
+                    <span *ngIf="!(isConnecting$ | async) && !(isMetaMaskInstalled$ | async)">Instalar MetaMask</span>
+                </button>
+                <img class="avatar" src="assets/avatar-placeholder.jpg" alt="User Avatar Placeholder">
+            </ng-container>
+
+            <ng-template #connectedState>
+                <div class="user-info" *ngIf="userAddress$ | async as address">
+                    <span class="user-address" [title]="address">{{ getDisplayAddress(address) }}</span>
+                    <img
+                        class="avatar avatar--connected"
+                        [src]="avatarSrc$ | async"
+                        alt="MetaMask Logo - Click para desconectar"
+                        title="Desconectar Wallet"
+                        (click)="logout()"
+                    >
+                </div>
+            </ng-template>
         </div>
     </div>
 </header>

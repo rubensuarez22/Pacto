@@ -172,3 +172,28 @@
     display: block;
     /* Evita espacio extra debajo si es inline */
 }
+
+.actions .user-info {
+    display: flex; /* ¡La clave! Activa Flexbox para este contenedor */
+    align-items: center; /* Centra los elementos verticalmente dentro del contenedor flex */
+    gap: 8px; /* Espacio entre la dirección y el avatar (ajusta según necesites) */
+  }
+  
+  .actions .user-address {
+    /* Puedes añadir estilos específicos para la dirección si es necesario */
+    font-size: 0.9em; /* Ejemplo */
+    color: #ffffff; /* Asegúrate que el color contraste con tu fondo */
+    /* No necesitas 'order' aquí a menos que quieras cambiar el orden visual del DOM */
+  }
+  
+  .actions .avatar--connected {
+    cursor: pointer;
+    transition: opacity 0.2s ease-in-out;
+    width: 32px; /* Ajusta el tamaño del avatar si es necesario */
+    height: 32px; /* Ajusta el tamaño del avatar si es necesario */
+    border-radius: 50%; /* Para que sea circular si la imagen no lo es */
+  }
+  
+  .actions .avatar--connected:hover {
+    opacity: 0.8;
+  }
