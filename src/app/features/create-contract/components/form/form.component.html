@@ -1,0 +1,39 @@
+<form class="contract-form" #contractNgForm="ngForm" (ngSubmit)="onSubmit(contractNgForm)">
+
+    <div class="form-row">
+        <div class="form-group">
+            <label for="contractName">Nombre Del Contrato</label>
+            <input type="text" id="contractName" name="contractName" placeholder="Ej: Mi Contrato V1" required ngModel
+                #name="ngModel">
+            <div *ngIf="name.invalid && (name.dirty || name.touched)" class="error-message">
+                El nombre del contrato es requerido.
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="blockchain">Blockchain</label>
+            <select id="blockchain" name="blockchain" required ngModel #blockchain="ngModel">
+                <option value="" disabled selected>Selecciona una red</option>
+                <option value="ethereum">Ethereum</option>
+                <option value="polygon">Polygon</option>
+                <option value="bsc">BNB Chain</option>
+            </select>
+            <div *ngIf="blockchain.invalid && (blockchain.dirty || blockchain.touched)" class="error-message">
+                Por favor, selecciona una blockchain.
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group description-group">
+        <label for="description">Descripción</label>
+        <textarea id="description" name="description" rows="6"
+            placeholder="Añade una breve descripción de tu contrato..." ngModel>
+      </textarea>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn primary" [disabled]="contractNgForm.invalid">
+            Desplegar Contrato
+        </button>
+    </div>
+
+</form>
