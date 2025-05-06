@@ -1,0 +1,12 @@
+<div *ngIf="isLoading" class="loading-state">
+    <p>Cargando tus contratos...</p>
+</div>
+
+<div class="contracts-grid" *ngIf="!isLoading && contracts.length > 0; else emptyStateBlock">
+    <app-contract-card *ngFor="let contract of contracts; trackBy: trackByContractId" [contract]="contract">
+    </app-contract-card>
+</div>
+
+<ng-template #emptyStateBlock>
+    <app-empty-state *ngIf="!isLoading"></app-empty-state>
+</ng-template>
