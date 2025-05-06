@@ -1,0 +1,219 @@
+/* Estilos específicos para ContractFormComponent */
+
+.contract-form {
+    margin-left: 30px;
+    margin-right: 30px;
+    margin-top: 30px;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    /* Permite que los campos pasen abajo en pantallas pequeñas */
+    gap: 30px;
+    /* Espacio entre campos (horizontal y vertical cuando envuelve) */
+    margin-bottom: 25px;
+    /* Espacio debajo de la fila antes de la descripción */
+}
+
+.form-group {
+    flex: 1 1 40%;
+    /* Intenta poner 2 columnas, pero permite envolver */
+    min-width: 200px;
+    /* Ancho mínimo antes de envolver */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Grupo específico para descripción o campos que ocupen toda la fila */
+.description-group {
+    flex-basis: 100%;
+    /* Asegura que ocupe toda la fila */
+    /* Podrías quitar el min-width si no aplica */
+}
+
+.form-group label {
+    font-family: 'Oxanium', sans-serif;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #cccccc;
+    margin-bottom: 8px;
+    display: block;
+    /* Asegura que esté en su propia línea */
+}
+
+/* Estilo común para inputs, select, textarea */
+input[type="text"],
+select,
+textarea {
+    width: 100%;
+    padding: 12px 15px;
+    background-color: rgba(42, 26, 64, 0.5);
+    /* Fondo oscuro translúcido */
+    border: 1px solid #5a3a7e;
+    /* Borde morado sutil */
+    border-radius: 8px;
+    color: #ffffff;
+    font-family: 'Oxanium', sans-serif;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input[type="text"]::placeholder,
+textarea::placeholder {
+    color: #888888;
+    opacity: 1;
+}
+
+input[type="text"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #AD1AAF;
+    /* Resalta borde al enfocar */
+    box-shadow: 0 0 10px rgba(173, 26, 175, 0.3);
+}
+
+/* Estilos específicos para el select (flecha) */
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    /* Icono de flecha SVG gris claro codificado */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23cccccc' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 12px;
+    cursor: pointer;
+    padding-right: 40px;
+    /* Espacio extra para la flecha */
+}
+
+/* Solución para que la opción 'disabled selected' no se vea gris oscuro en algunos navegadores */
+select:required:invalid {
+    color: #888888;
+}
+
+option[value=""][disabled] {
+    display: none;
+    /* Oculta la opción placeholder en el desplegable */
+}
+
+option {
+    color: #000000;
+    /* Color de las opciones (suele ser nativo) */
+    background-color: #ffffff;
+    /* Fondo de las opciones */
+}
+
+
+textarea {
+    resize: vertical;
+    /* Permitir redimensionar solo verticalmente */
+    min-height: 120px;
+}
+
+/* --- Mensajes de Error --- */
+.error-message {
+    color: #ff6b6b;
+    /* Rojo claro para errores */
+    font-size: 0.8rem;
+    padding-top: 6px;
+    font-weight: 400;
+}
+
+/* --- Acciones del Formulario / Botón Submit --- */
+.form-actions {
+    text-align: center;
+    /* Centra el botón */
+    margin-top: 40px;
+}
+
+/* Botón principal con barras laterales */
+.btn.primary {
+    position: relative;
+    /* Para posicionar ::before/::after */
+    overflow: visible;
+    /* Para que las barras puedan sobresalir */
+    padding: 12px 45px;
+    font-size: 1.05rem;
+    font-family: 'Oxanium', sans-serif;
+    color: #fff;
+    border: none;
+    background: #AD1AAF;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+/* Pseudo‐elementos para las barras */
+.btn.primary::before,
+.btn.primary::after {
+    content: '';
+    position: absolute;
+    top: -4px;
+    /* Un poco por encima */
+    bottom: -4px;
+    /* Un poco por debajo */
+    width: 4px;
+    background: #AD1AAF;
+    border-radius: 1px;
+    z-index: -1;
+    /* Detrás del botón */
+}
+
+/* Barra izquierda */
+.btn.primary::before {
+    left: -8px;
+    /* Desplazada hacia la izquierda */
+}
+
+/* Barra derecha */
+.btn.primary::after {
+    right: -8px;
+    /* Desplazada hacia la derecha */
+}
+
+/* Hover */
+.btn.primary:hover {
+    opacity: 0.85;
+}
+
+/* Botón deshabilitado */
+.btn.primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #5a3a7e;
+    box-shadow: none;
+}
+
+/* Oculta las barras cuando está deshabilitado */
+.btn.primary:disabled::before,
+.btn.primary:disabled::after {
+    display: none;
+}
+
+
+
+
+/* --- Responsive Simple --- */
+@media (max-width: 600px) {
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+        /* Quitamos gap de fila */
+        margin-bottom: 0;
+    }
+
+    .form-group {
+        flex-basis: auto;
+        min-width: unset;
+        margin-bottom: 25px;
+        /* Espacio entre campos vertical */
+    }
+
+    /* Asegura que descripción también tenga margen inferior */
+    .description-group {
+        margin-bottom: 25px;
+    }
+}

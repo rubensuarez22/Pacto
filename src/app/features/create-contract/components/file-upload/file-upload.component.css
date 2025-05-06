@@ -1,0 +1,98 @@
+/* Estilos específicos para FileUploadComponent */
+
+.file-upload-area {
+    margin-bottom: 20px;
+    /* Espacio debajo de esta sección, antes del formulario */
+}
+
+.dropzone {
+    border: 2px dashed #5a3a7e;
+    /* Borde punteado morado oscuro */
+    border-radius: 15px;
+    /* Bordes redondeados */
+    background-color: rgba(42, 26, 64, 0.2);
+    /* Fondo muy sutil, casi transparente */
+    padding: 45px 25px;
+    /* Espaciado interno generoso */
+    display: flex;
+    flex-direction: column;
+    /* Apila el contenido (icono, textos, botón) */
+    align-items: center;
+    /* Centra horizontalmente */
+    justify-content: center;
+    /* Centra verticalmente */
+    min-height: 230px;
+    /* Altura mínima del área */
+    text-align: center;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    cursor: pointer;
+    /* Indica que se puede hacer clic/arrastrar */
+    margin-right: 30px;
+    margin-left: 30px;
+}
+
+/* Estilo opcional para cuando se arrastra un archivo sobre el área */
+.dropzone.is-active {
+    background-color: rgba(42, 26, 64, 0.4);
+    /* Fondo un poco más visible */
+    border-color: #AD1AAF;
+    /* Borde más brillante */
+}
+
+.dropzone-icon {
+    width: 55px;
+    /* Tamaño del icono */
+    height: auto;
+    margin-bottom: 20px;
+    /* Espacio debajo del icono */
+    opacity: 0.5;
+    /* Icono algo tenue */
+}
+
+.dropzone-text-main {
+    font-family: 'Oxanium', sans-serif;
+    /* Asegura la fuente si no hereda */
+    font-size: 1.15rem;
+    /* Ligeramente más grande */
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #eaeaea;
+    /* Casi blanco */
+}
+
+.dropzone-text-support {
+    font-family: 'Oxanium', sans-serif;
+    font-size: 0.9rem;
+    color: #a0a0a0;
+    /* Gris */
+    margin-bottom: 25px;
+    /* Espacio antes del botón */
+}
+
+.btn-browse {
+    font-family: 'Oxanium', sans-serif;
+    background: none;
+    border: 1px solid #7c5a9e;
+    /* Borde morado */
+    color: #d0c0e0;
+    /* Color de texto morado claro */
+    padding: 8px 25px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.btn-browse:hover {
+    background-color: rgba(173, 26, 175, 0.15);
+    /* Fondo suave al pasar el mouse */
+    color: #fff;
+    border-color: #a070c0;
+    /* Borde un poco más claro */
+}
+
+/* El input real está oculto, no necesita estilos visibles */
+input[type="file"] {
+    display: none;
+}

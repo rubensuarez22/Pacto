@@ -5,6 +5,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { SharedModule } from './shared/shared.module';
 import { LandingModule } from './features/landing/landing.module';
+import { CreateContractModule } from './features/create-contract/create-contract.module';
 
 @NgModule({
   declarations: [
@@ -14,7 +15,8 @@ import { LandingModule } from './features/landing/landing.module';
     BrowserModule,
     AppRoutingModule,
     SharedModule,
-    LandingModule
+    LandingModule,
+    CreateContractModule
 
   ],
   providers: [],
