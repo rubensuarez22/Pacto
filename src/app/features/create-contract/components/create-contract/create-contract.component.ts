@@ -1,11 +1,10 @@
 // src/app/features/create-contract/create-contract.component.ts
-import { Component, OnDestroy } from '@angular/core';
-import { WalletService } from '../../../../core/services/wallet.service'; // Asegúrate que la ruta sea correcta
-import { CompilerService, CompilationResult } from '../../../../core/services/compiler.service'; // Asegúrate que la ruta sea correcta
+import { Component, OnDestroy, NgZone } from '@angular/core'; // Añade NgZone
+import { WalletService } from '../../../../core/services/wallet.service';
+import { CompilerService, CompilationResult } from '../../../../core/services/compiler.service';
 import { Subscription } from 'rxjs';
 import Swal from 'sweetalert2';
-// Importa ethers si planeas usarlo para el despliegue después
-// import { ethers } from 'ethers'; 
+import { ethers } from 'ethers'; // Importa ethers
 
 @Component({
   selector: 'app-create-contract',
@@ -14,26 +13,27 @@ import Swal from 'sweetalert2';
   styleUrls: ['./create-contract.component.css']
 })
 export class CreateContractComponent implements OnDestroy {
-  // Propiedades para el archivo
   selectedFile: File | undefined;
   soliditySourceCode: string | undefined;
   fileName: string | undefined;
 
-  // Estado y resultados de la compilación
-  compilationResult: CompilationResult | null = null; // Guarda ABI, Bytecode, contractName
+  compilationResult: CompilationResult | null = null;
   compilationError: string | null = null;
   isCompiling: boolean = false;
 
-  // Propiedades para el estado del despliegue (usadas en el HTML)
   isDeploying: boolean = false;
   deployedContractAddress: string | null = null;
   deploymentError: string | null = null;
 
   private compilationSubscription: Subscription | undefined;
 
+  // Sepolia Chain ID (como número BigInt)
+  private readonly SEPOLIA_CHAIN_ID = 11155111n;
+
   constructor(
     private compilerService: CompilerService,
-    private walletService: WalletService // Inyecta WalletService
+    private walletService: WalletService,
+    private ngZone: NgZone // Inyecta NgZone para actualizaciones desde callbacks de ethers
   ) {}
 
   onFileSelectedFromUpload(file: File | undefined): void {
@@ -42,9 +42,9 @@ export class CreateContractComponent implements OnDestroy {
     this.fileName = undefined;
     this.compilationResult = null;
     this.compilationError = null;
-    this.deployedContractAddress = null; // Resetea estado de despliegue
-    this.deploymentError = null;       // Resetea estado de despliegue
-    this.isDeploying = false;          // Resetea estado de despliegue
+    this.deployedContractAddress = null;
+    this.deploymentError = null;
+    this.isDeploying = false;
 
     if (file) {
       this.fileName = file.name;
@@ -53,7 +53,7 @@ export class CreateContractComponent implements OnDestroy {
         this.soliditySourceCode = e.target?.result as string;
         console.log(`Contenido del archivo ${this.fileName} cargado.`);
         if (this.soliditySourceCode && this.fileName) {
-          this.handleCompileContract(); // Compila automáticamente
+          this.handleCompileContract();
         } else {
           Swal.fire('Error Interno', 'No se pudo obtener el contenido del archivo.', 'error');
         }
@@ -76,10 +76,9 @@ export class CreateContractComponent implements OnDestroy {
     this.isCompiling = true;
     this.compilationResult = null;
     this.compilationError = null;
-    this.deployedContractAddress = null; // Resetea estado de despliegue
-    this.deploymentError = null;       // Resetea estado de despliegue
-    this.isDeploying = false;          // Resetea estado de despliegue
-
+    this.deployedContractAddress = null;
+    this.deploymentError = null;
+    this.isDeploying = false;
 
     if (this.compilationSubscription) {
       this.compilationSubscription.unsubscribe();
@@ -88,7 +87,7 @@ export class CreateContractComponent implements OnDestroy {
     this.compilationSubscription = this.compilerService.compile(this.fileName, this.soliditySourceCode)
       .subscribe({
         next: (result) => {
-          this.compilationResult = result; // ABI y Bytecode guardados
+          this.compilationResult = result;
           console.log('Resultado de compilación:', this.compilationResult);
           this.isCompiling = false;
 
@@ -117,44 +116,158 @@ export class CreateContractComponent implements OnDestroy {
 
   /**
    * Se llama cuando <app-form> emite el evento (formSubmitted).
-   * Recibe los datos del formulario y prepara el despliegue (a implementar).
+   * Inicia el proceso de despliegue.
    * @param formData Datos del formulario: { contractName: string, blockchain: string, description: string }
    */
-  onSubmitFromAppForm(formData: any): void { // No necesita ser async todavía
-    console.log("Datos recibidos del app-form:", formData);
+  async onSubmitFromAppForm(formData: any): Promise<void> {
+    console.log("onSubmitFromAppForm llamado con:", formData);
 
-    if (!this.compilationResult) {
-      Swal.fire('Atención', 'Primero debes subir y compilar un archivo .sol.', 'warning');
-      return; // Salimos si no hay nada compilado
+    // 1. Verificar si la compilación está lista
+    if (!this.compilationResult || !this.compilationResult.abi || !this.compilationResult.bytecode) {
+      Swal.fire('Error', 'Datos de compilación no encontrados. Por favor, compila un contrato primero.', 'error');
+      return;
     }
 
-    // --- AQUÍ EMPEZARÍA LA LÓGICA DE DESPLIEGUE (PRÓXIMO PASO) ---
+    // 2. Verificar conexión de Wallet y obtener Signer
+    let signer = this.walletService.signer;
+    if (!signer) {
+      try {
+        console.log("Intentando conectar wallet...");
+        await this.walletService.connectWallet();
+        signer = this.walletService.signer; // Intenta obtener el signer de nuevo
+        if (!signer) {
+          Swal.fire('Error', 'Conexión de wallet fallida o cancelada. No se puede desplegar.', 'error');
+          return;
+        }
+        console.log("Wallet conectada exitosamente.");
+      } catch (e) {
+        Swal.fire('Error', 'Error al conectar la wallet. No se puede desplegar.', 'error');
+        return;
+      }
+    }
 
-    console.log('Formulario enviado. Preparando para despliegue...');
-    console.log('Datos del formulario:', formData);
-    console.log('Datos de compilación:', this.compilationResult);
+    // 3. Verificar Red (Solo Sepolia)
+    try {
+        // Accedemos al provider a través del signer
+        if (!signer.provider) {
+            throw new Error("Signer no tiene un provider asociado.");
+        }
+        const network = await signer.provider.getNetwork();
+        console.log("Red actual de MetaMask:", network.name, network.chainId);
 
-    // 1. Verificar conexión de Wallet y obtener Signer (del WalletService)
-    // 2. Verificar red seleccionada (formData.blockchain) vs red de MetaMask
-    // 3. Crear ContractFactory con ABI, Bytecode y Signer
-    // 4. Llamar a factory.deploy()
-    // 5. Manejar estados (isDeploying, deployedContractAddress, deploymentError)
-    // 6. Mostrar notificaciones con SweetAlert
-    // 7. Llamar a la función de Firebase para guardar la referencia
+        if (network.chainId !== this.SEPOLIA_CHAIN_ID) {
+            Swal.fire(
+                'Red Incorrecta',
+                'Por favor, cambia tu red en MetaMask a Sepolia Testnet para poder desplegar este contrato.',
+                'warning'
+            );
+            return; // Detener el despliegue
+        }
 
-    // Por ahora, solo mostramos un mensaje indicando que estamos listos para el siguiente paso
-    Swal.fire(
-      'Listo para Desplegar',
-      `Se usarán los datos del formulario y el contrato compilado "${this.compilationResult.contractName}". El siguiente paso es implementar la lógica de despliegue.`,
-      'info',
-    );
+        // Opcional: Verificar si la selección del formulario coincide (aunque solo permitimos Sepolia)
+        if (formData.blockchain !== 'sepolia') {
+             console.warn("La selección del formulario no es Sepolia, pero se procederá porque es la única red soportada.");
+             // Podrías forzar el despliegue a Sepolia o mostrar un error si quieres ser más estricto.
+        }
 
-    // this.desplegarContrato(formData); // Llamaríamos a la función de despliegue real aquí
+    } catch (error: any) {
+        console.error("Error obteniendo la red:", error);
+        Swal.fire('Error', `No se pudo verificar la red conectada: ${error.message}`, 'error');
+        return;
+    }
+
+
+    // --- INICIO DEL PROCESO DE DESPLIEGUE ---
+    this.isDeploying = true;
+    this.deployedContractAddress = null;
+    this.deploymentError = null;
+
+    console.log("Iniciando despliegue en Sepolia...");
+    console.log("ABI:", this.compilationResult.abi);
+    // console.log("Bytecode:", this.compilationResult.bytecode); // Puede ser muy largo para loguear completo
+
+    try {
+      // 4. Crear ContractFactory
+      const factory = new ethers.ContractFactory(
+        this.compilationResult.abi,
+        this.compilationResult.bytecode,
+        signer // Usamos el signer obtenido
+      );
+
+      // 5. Llamar a factory.deploy() y mostrar pop-up de espera
+      // Si tu contrato necesitara argumentos en el constructor, se pasarían aquí.
+      // const contract = await factory.deploy(arg1, arg2);
+      console.log("Enviando transacción de despliegue...");
+      const contract = await factory.deploy();
+
+      Swal.fire({
+        title: 'Desplegando Contrato',
+        text: `Enviando transacción... Hash: ${contract.deploymentTransaction()?.hash}. Por favor, espera la confirmación en MetaMask y en la red.`,
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      // 6. Esperar confirmación
+      const deploymentReceipt = await contract.waitForDeployment();
+      // Necesitamos esperar un poco más para asegurar que esté disponible
+      // await deploymentReceipt.wait(1); // Espera 1 confirmación adicional (opcional)
+      
+      const contractAddress = await deploymentReceipt.getAddress();
+
+      // 7. Actualizar estado y mostrar éxito
+      this.ngZone.run(() => { // Asegurar actualización en zona Angular
+        this.deployedContractAddress = contractAddress;
+        this.isDeploying = false;
+      });
+      Swal.close(); // Cierra el pop-up de "Desplegando"
+      Swal.fire(
+        '¡Despliegue Exitoso!',
+        `Contrato "${this.compilationResult.contractName}" desplegado en Sepolia.\nDirección: ${this.deployedContractAddress}`,
+        'success'
+      );
+      console.log(`Contrato desplegado exitosamente en: ${this.deployedContractAddress}`);
+
+      // 8. (Futuro) Llamar a Firebase para guardar la referencia
+      // this.guardarReferenciaEnFirestore(formData, this.deployedContractAddress);
+
+    } catch (error: any) {
+      console.error("Error durante el despliegue:", error);
+      let errorMessage = `Error durante el despliegue: ${error.message || "Error desconocido"}`;
+      if (error.code === 4001 || error.code === "ACTION_REJECTED") { // User rejected transaction
+        errorMessage = "Transacción de despliegue rechazada por el usuario.";
+      } else if (error.message.includes("insufficient funds")) {
+        errorMessage = "Fondos insuficientes en la cuenta para cubrir el costo del gas.";
+      }
+      // Asegurar actualización en zona Angular
+      this.ngZone.run(() => {
+        this.deploymentError = errorMessage;
+        this.isDeploying = false;
+      });
+      Swal.close(); // Cierra el pop-up de "Desplegando" si estaba abierto
+      Swal.fire('Error de Despliegue', errorMessage, 'error');
+    }
+    // El finally no es necesario aquí porque el catch ya maneja el error y el success maneja el éxito.
+    // finally {
+    //   this.ngZone.run(() => { this.isDeploying = false; });
+    // }
   }
 
-  // async desplegarContrato(formData: any) {
-  //   // ... Lógica de despliegue que implementaremos ...
+  // async guardarReferenciaEnFirestore(formData: any, contractAddr: string) {
+  //   const userAddr = this.walletService.getCurrentAddress();
+  //   if (!userAddr) return;
+  //   console.log("Guardando referencia en Firestore:", {
+  //     nombreApp: formData.contractName,
+  //     descripcion: formData.description,
+  //     address: contractAddr,
+  //     network: 'sepolia', // Forzado a Sepolia por ahora
+  //     user: userAddr,
+  //     contractNameSol: this.compilationResult?.contractName
+  //   });
+  //   // Lógica para llamar a la Cloud Function 'addContract'
   // }
+
 
   ngOnDestroy(): void {
     if (this.compilationSubscription) {
