@@ -12,7 +12,7 @@ export interface ContractReferenceDataForBackend {
   description: string;
   network: string; // Ej. 'sepolia'
   contractNameSol?: string; // Nombre real del contrato del .sol (opcional)
-  abi: any[]; // ABI (opcional)
+  abi: any[];
 }
 
 // Datos completos a enviar al backend
