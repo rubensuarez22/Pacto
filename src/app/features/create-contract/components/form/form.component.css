@@ -140,6 +140,7 @@ textarea {
     background: #AD1AAF;
     cursor: pointer;
     transition: opacity 0.2s ease;
+    margin-bottom: 10px;
 }
 
 /* Pseudo‐elementos para las barras */

@@ -1,38 +1,41 @@
 // src/app/core/services/wallet.service.ts
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Observable, map } from 'rxjs';
+import { ethers } from 'ethers'; // Importa ethers
 
-// Declaración global (si no la tienes en otro archivo global)
+// Declaración global
 declare global {
   interface Window {
-    ethereum?: any;
+    // Mantenemos el tipo Eip1193Provider para el provider de ethers,
+    // pero castearemos a 'any' para los listeners de eventos.
+    ethereum?: ethers.Eip1193Provider;
   }
 }
 
 @Injectable({
-  providedIn: 'root' // Disponible en toda la aplicación
+  providedIn: 'root'
 })
 export class WalletService implements OnDestroy {
-  // --- Subjects privados para manejar el estado internamente ---
+  // --- Propiedades Públicas ---
+  public signer: ethers.Signer | null = null;
+
+  // --- Subjects privados ---
   private readonly _userAddress = new BehaviorSubject<string | null>(null);
   private readonly _isConnecting = new BehaviorSubject<boolean>(false);
   private readonly _isMetaMaskInstalled = new BehaviorSubject<boolean>(false);
-  private accountsChangedSubscription?: (accounts: string[]) => void;
+  private provider: ethers.BrowserProvider | null = null;
+  // Cambiamos el tipo de la suscripción para que coincida con el listener
+  private accountsChangedSubscription?: (accounts: string[]) => void | Promise<void>;
 
-  // --- Observables públicos para que los componentes se suscriban ---
+  // --- Observables públicos ---
   readonly userAddress$: Observable<string | null> = this._userAddress.asObservable();
   readonly isConnecting$: Observable<boolean> = this._isConnecting.asObservable();
   readonly isMetaMaskInstalled$: Observable<boolean> = this._isMetaMaskInstalled.asObservable();
-
-  // Observable derivado para saber fácilmente si está conectado
-  readonly isConnected$: Observable<boolean> = this._userAddress.pipe(
-    map(address => !!address) // Convierte la dirección (o null) a booleano
-  );
-
+  readonly isConnected$: Observable<boolean> = this.userAddress$.pipe(map(address => !!address));
   readonly avatarSrc$: Observable<string> = this.isConnected$.pipe(
     map(isConnected => isConnected
-      ? 'assets/images/lobito.png'  // <-- Ruta al logo de MetaMask
-      : 'assets/avatar-placeholder.jpg'   // <-- Ruta al placeholder por defecto
+      ? 'assets/images/lobito.png' // Asegúrate que esta ruta sea correcta
+      : 'assets/avatar-placeholder.jpg'
     )
   );
 
@@ -41,26 +44,51 @@ export class WalletService implements OnDestroy {
   }
 
   private initializeWalletState(): void {
-    if (typeof window.ethereum !== 'undefined') {
+    // Usamos 'any' temporalmente para verificar 'window.ethereum' si el tipo EIP1193 da problemas aquí
+    const ethereumProvider = window.ethereum as any; 
+
+    if (typeof ethereumProvider !== 'undefined') {
       this._isMetaMaskInstalled.next(true);
-      console.log('WalletService: MetaMask está instalado.');
+      this.provider = new ethers.BrowserProvider(ethereumProvider);
+      console.log('WalletService: MetaMask está instalado y provider creado.');
 
       this.checkExistingConnection();
 
       // Escuchar cambios de cuenta
-      this.accountsChangedSubscription = (accounts: string[]) => {
-        this.ngZone.run(() => { // Siempre dentro de NgZone
+      this.accountsChangedSubscription = async (accounts: string[]) => { // Marcado como async
+        this.ngZone.run(async () => {
           const newAddress = accounts.length > 0 ? accounts[0] : null;
-          if (newAddress !== this._userAddress.getValue()) { // Solo actualizar si cambia
-             this._userAddress.next(newAddress);
-             console.log('WalletService: Cuenta cambiada a:', newAddress);
+          const currentAddress = this._userAddress.getValue(); // Obtener valor actual
+
+          if (newAddress !== currentAddress) {
+            this._userAddress.next(newAddress);
+            if (newAddress && this.provider) {
+              try {
+                this.signer = await this.provider.getSigner();
+                console.log('WalletService: Cuenta cambiada y signer actualizado para:', newAddress);
+              } catch (error) {
+                 console.error("WalletService: Error obteniendo signer tras cambio de cuenta:", error);
+                 this.signer = null; // Limpiar si falla
+                 this._userAddress.next(null); // También limpiar dirección si falla obtener signer
+              }
+            } else {
+              this.signer = null;
+              console.log('WalletService: Cuenta desconectada, signer limpiado.');
+            }
           }
+          // No necesitamos el 'else if' separado, la condición newAddress !== currentAddress
+          // y la lógica interna ya cubren el caso de desconexión (newAddress será null).
         });
       };
-      window.ethereum.on('accountsChanged', this.accountsChangedSubscription);
+      
+      // CORRECCIÓN: Castear a 'any' para usar '.on()'
+      if (ethereumProvider && typeof ethereumProvider.on === 'function') {
+        (ethereumProvider as any).on('accountsChanged', this.accountsChangedSubscription);
+        console.log('WalletService: Suscrito a accountsChanged.');
+      } else {
+        console.warn('WalletService: ethereumProvider.on no está disponible.');
+      }
 
-      // Podrías escuchar 'chainChanged' aquí también si es necesario
-      // window.ethereum.on('chainChanged', (chainId: string) => { ... });
 
     } else {
       this._isMetaMaskInstalled.next(false);
@@ -69,81 +97,120 @@ export class WalletService implements OnDestroy {
   }
 
   private async checkExistingConnection(): Promise<void> {
-    if (!this._isMetaMaskInstalled.getValue()) return;
+    if (!this.provider) {
+      console.log("WalletService: Provider no disponible para checkExistingConnection.");
+      return;
+    }
     try {
-      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-      if (accounts && accounts.length > 0 && !this._userAddress.getValue()) {
-         this.ngZone.run(() => {
-            this._userAddress.next(accounts[0]);
-            console.log('WalletService: Conexión existente encontrada:', accounts[0]);
-         });
+      const accounts = await this.provider.listAccounts();
+      console.log("WalletService: Cuentas encontradas por listAccounts:", accounts);
+      if (accounts && accounts.length > 0) {
+        const signer = await this.provider.getSigner(); // Obtiene el signer asociado a la primera cuenta
+        const address = await signer.getAddress();
+        const currentAddress = this._userAddress.getValue();
+
+        if (address !== currentAddress) {
+           this.signer = signer; // Actualiza el signer
+           this.ngZone.run(() => {
+             this._userAddress.next(address); // Actualiza la dirección
+             console.log('WalletService: Conexión existente/Signer obtenido para:', address);
+           });
+        } else if (!this.signer) {
+           // Si la dirección es la misma pero no teníamos signer, lo asignamos
+           this.signer = signer;
+           console.log('WalletService: Signer asignado para conexión existente:', address);
+        }
+
+      } else {
+         if (this.signer || this._userAddress.getValue()){
+             this.ngZone.run(() => {
+                 this.signer = null;
+                 this._userAddress.next(null);
+                 console.log('WalletService: No hay conexión existente autorizada, estado limpiado.');
+             });
+         }
       }
     } catch (error) {
       console.error('WalletService: Error verificando conexión existente:', error);
+      this.ngZone.run(() => {
+        this.signer = null;
+        this._userAddress.next(null);
+      });
     }
   }
 
   async connectWallet(): Promise<void> {
-    if (!this._isMetaMaskInstalled.getValue()) {
+    if (!this._isMetaMaskInstalled.getValue() || !this.provider) {
       alert('Por favor, instala MetaMask.');
-      // Opcional: Redirigir
-      // window.open('https://metamask.io/download/', '_blank');
       return;
     }
 
-    if (this._userAddress.getValue()) {
-      console.log('WalletService: Ya estás conectado con:', this._userAddress.getValue());
-      return;
+    if (this.signer) {
+      try {
+        const address = await this.signer.getAddress();
+        console.log('WalletService: Ya estás conectado con:', address);
+        // Quizás forzar una re-obtención del signer para asegurar que es el actual
+        this.signer = await this.provider.getSigner();
+        this._userAddress.next(await this.signer.getAddress()); // Reafirmar dirección
+        return;
+      } catch (error) {
+         console.error("WalletService: Error obteniendo dirección del signer existente:", error);
+         // Forzar reconexión si falla obtener la dirección
+         this.signer = null;
+         this._userAddress.next(null);
+      }
     }
 
     this._isConnecting.next(true);
     try {
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      if (accounts && accounts.length > 0) {
-        this.ngZone.run(() => {
-          this._userAddress.next(accounts[0]);
-          console.log('WalletService: Wallet conectada:', accounts[0]);
-        });
-      }
+      // Usamos send para solicitar cuentas, luego getSigner
+      await this.provider.send("eth_requestAccounts", []); // Abre MetaMask para conectar
+      this.signer = await this.provider.getSigner(); // Obtiene el signer
+      const address = await this.signer.getAddress();
+
+      this.ngZone.run(() => {
+        this._userAddress.next(address);
+        console.log('WalletService: Wallet conectada y signer obtenido para:', address);
+      });
     } catch (error: any) {
-       console.error('WalletService: Error al conectar wallet:', error);
-       this.ngZone.run(() => { // Asegurar que el estado de error se actualice en la zona
+       console.error('WalletService: Error al conectar wallet/obtener signer:', error);
+       this.ngZone.run(() => {
+           this.signer = null;
+           this._userAddress.next(null);
            if (error.code === 4001) {
               alert('Rechazaste la conexión de la billetera.');
+           } else if (error.code === -32002) {
+              alert('Ya hay una solicitud de conexión pendiente en MetaMask. Por favor, revísala.');
            } else {
               alert(`Ocurrió un error al conectar: ${error.message || error}`);
            }
        });
     } finally {
        this.ngZone.run(() => {
-          this._isConnecting.next(false); // Asegurar que isConnecting vuelva a false
+          this._isConnecting.next(false);
        });
     }
   }
 
-  /**
-   * @notice Clears the connected wallet address from the application's state.
-   * Effectively logs the user out from the dApp's perspective.
-   */
   disconnectWallet(): void {
-    if (this._userAddress.getValue()) { // Check if actually connected
-      console.log('WalletService: Clearing local wallet state for address:', this._userAddress.getValue());
-      this._userAddress.next(null); // Set address to null to signal disconnection
+    if (this.signer) {
+      console.log('WalletService: Limpiando estado local para:', this._userAddress.getValue());
+      this.signer = null;
+      this._userAddress.next(null);
     } else {
-      console.log('WalletService: disconnectWallet called but no address was stored.');
+      console.log('WalletService: disconnectWallet llamado pero no había signer.');
     }
   }
 
-  // Limpiar listeners al destruir el servicio (aunque con providedIn: 'root'
-  // el servicio vive mientras la app viva, es buena práctica tenerlo)
   ngOnDestroy(): void {
-    if (window.ethereum && this.accountsChangedSubscription) {
-      window.ethereum.removeListener('accountsChanged', this.accountsChangedSubscription);
+    const ethereumProvider = window.ethereum as any; // Castear a any para removeListener
+    if (ethereumProvider && typeof ethereumProvider.removeListener === 'function' && this.accountsChangedSubscription) {
+      // CORRECCIÓN: Castear a 'any' para usar '.removeListener()'
+      (ethereumProvider as any).removeListener('accountsChanged', this.accountsChangedSubscription);
       console.log('WalletService: Listener de accountsChanged removido.');
     }
   }
 
-  // --- Getters simples para acceso no reactivo (usar con cuidado) ---
   getCurrentAddress(): string | null {
     return this._userAddress.getValue();
   }

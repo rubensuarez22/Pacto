@@ -67,6 +67,21 @@
     /* Espacio antes del botón */
 }
 
+/* file-upload.component.css */
+.dropzone.is-disabled {
+    cursor: not-allowed;
+    border-color: #555; /* Un color más apagado */
+    background-color: #3a3a3a; /* Un fondo ligeramente diferente */
+    opacity: 0.7;
+  }
+  
+  .dropzone.is-disabled .btn-browse {
+    cursor: not-allowed;
+    background-color: #555;
+  }
+  
+  /* Puedes añadir más estilos para el estado deshabilitado */
+
 .btn-browse {
     font-family: 'Oxanium', sans-serif;
     background: none;

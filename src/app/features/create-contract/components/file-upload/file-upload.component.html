@@ -1,19 +1,31 @@
 <div class="file-upload-area">
-    <div class="dropzone" [class.is-active]="isActive" (click)="triggerFileInput()" (dragover)="onDragOver($event)"
-        (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
-
-        <img src="assets/icons/folder.svg" alt="Icono carpeta" class="dropzone-icon">
-
-        <p class="dropzone-text-main" *ngIf="!selectedFileName">
-            Arrastra El Archivo Con Tu Contrato Aquí
-        </p>
-        <p class="dropzone-text-main" *ngIf="selectedFileName" title="{{ selectedFileName }}">
-            Archivo: {{ selectedFileName }} </p>
-
-        <p class="dropzone-text-support">ARCHIVO SOPORTADO: .SOL</p>
-
-        <button type="button" class="btn-browse">Buscar Archivo</button>
-
-        <input type="file" hidden #fileInput accept=".sol" (change)="onFileSelected($event)">
+    <div
+      class="dropzone"
+      [class.is-active]="isActive && isWalletConnected" [class.is-disabled]="!isWalletConnected" (click)="triggerFileInput()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)">
+  
+      <img src="assets/icons/folder.svg" alt="Icono carpeta" class="dropzone-icon">
+  
+      <p class="dropzone-text-main" *ngIf="!selectedFileName">
+        <span *ngIf="isWalletConnected; else connectPrompt">
+          Arrastra El Archivo Con Tu Contrato Aquí
+        </span>
+        <ng-template #connectPrompt>
+          Conecta tu wallet para subir un archivo
+        </ng-template>
+      </p>
+      <p class="dropzone-text-main" *ngIf="selectedFileName" title="{{ selectedFileName }}">
+        Archivo: {{ selectedFileName }}
+      </p>
+  
+      <p class="dropzone-text-support">ARCHIVO SOPORTADO: .SOL</p>
+  
+      <button type="button" class="btn-browse" [disabled]="!isWalletConnected">
+        Buscar Archivo
+      </button>
+  
+      <input type="file" hidden #fileInput accept=".sol" (change)="onFileSelected($event)">
     </div>
-</div>
+  </div>

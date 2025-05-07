@@ -27,6 +27,23 @@
     </div>
   </div>
 
-  <app-form></app-form>
+  <app-form
+    [isCompilationDone]="!!compilationResult" 
+    [isCurrentlyDeploying]="isDeploying" 
+    (formSubmitted)="onSubmitFromAppForm($event)"> 
+    </app-form>
+  <div *ngIf="isDeploying" class="status-message loading-message">
+    <p>Desplegando contrato, por favor espera y aprueba la transacción en MetaMask...</p>
+  </div>
+
+  <div *ngIf="deployedContractAddress && !isDeploying" class="status-message success-message">
+    <h4>¡Despliegue Exitoso!</h4>
+    <p>Contrato desplegado en la dirección: <strong>{{ deployedContractAddress }}</strong></p>
+  </div>
+
+  <div *ngIf="deploymentError && !isDeploying" class="status-message error-message">
+     <h4>Error de Despliegue:</h4>
+     <p>{{ deploymentError }}</p>
+  </div>
 
 </section>

@@ -1,4 +1,3 @@
-// src/app/layout/header/header.component.ts (o donde esté tu header)
 import { Component, OnInit } from '@angular/core';
 import { WalletService } from '../../../core/services/wallet.service'; // Ajusta la ruta
 import { Observable } from 'rxjs';
@@ -6,7 +5,6 @@ import { Observable } from 'rxjs';
 @Component({
   selector: 'app-header',
   standalone: false,
-  // imports: [CommonModule, RouterModule],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css']
 })
@@ -27,7 +25,6 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Ya no necesita la lógica de inicialización aquí, el servicio se encarga.
   }
 
   // Método para conectar (ahora solo llama al servicio)
