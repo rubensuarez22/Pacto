@@ -2,22 +2,6 @@
   <app-title></app-title>
 
   <app-file-upload (fileSelected)="onFileSelectedFromUpload($event)"></app-file-upload>
-
-  <div class="actions-section" *ngIf="selectedFile && !compilationResult && !isCompiling">
-    <button type="button" class="btn primary-button" (click)="handleCompileContract()">
-      Compilar Contrato
-    </button>
-  </div>
-
-  <div *ngIf="isCompiling" class="status-message loading-message">
-    <p>Compilando, por favor espera...</p>
-  </div>
-
-  <div *ngIf="compilationError && !isCompiling" class="status-message error-message">
-    <h4>Error de Compilación:</h4>
-    <pre>{{ compilationError }}</pre>
-  </div>
-
   <div *ngIf="compilationResult && !isCompiling" class="compilation-results">
     <h3>Contrato "{{ compilationResult.contractName }}" listo para despliegue.</h3>
 
