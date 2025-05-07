@@ -41,7 +41,12 @@
             "styles": [
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [
+              "node_modules/solc/solc.js"
+            ],
+            "allowedCommonJsDependencies": [
+              "solc"
+            ]
           },
           "configurations": {
             "production": {
