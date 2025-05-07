@@ -1,40 +1,32 @@
 <section class="create-contracts">
-    <app-title></app-title> <app-file-upload (fileSelected)="onFileUploadedFromChild($event)"></app-file-upload>
-  
-    <div class="actions-section" *ngIf="selectedFile && !compilationResult && !isCompiling">
-      <button type="button" class="btn primary-button" (click)="handleCompileContract()">
-        Compilar Contrato
-      </button>
+  <app-title></app-title>
+
+  <app-file-upload (fileSelected)="onFileSelectedFromUpload($event)"></app-file-upload>
+
+  <div class="actions-section" *ngIf="selectedFile && !compilationResult && !isCompiling">
+    <button type="button" class="btn primary-button" (click)="handleCompileContract()">
+      Compilar Contrato
+    </button>
+  </div>
+
+  <div *ngIf="isCompiling" class="status-message loading-message">
+    <p>Compilando, por favor espera...</p>
+  </div>
+
+  <div *ngIf="compilationError && !isCompiling" class="status-message error-message">
+    <h4>Error de Compilación:</h4>
+    <pre>{{ compilationError }}</pre>
+  </div>
+
+  <div *ngIf="compilationResult && !isCompiling" class="compilation-results">
+    <h3>Contrato "{{ compilationResult.contractName }}" listo para despliegue.</h3>
+
+    <div *ngIf="compilationResult.warnings && compilationResult.warnings.length > 0" class="status-message warnings-message">
+        <h4>Advertencias de Compilación:</h4>
+        <pre *ngFor="let warning of compilationResult.warnings">{{ warning }}</pre>
     </div>
-  
-    <div *ngIf="isCompiling" class="status-message loading-message">
-      <p>Compilando, por favor espera...</p>
-      </div>
-  
-    <div *ngIf="compilationError" class="status-message error-message">
-      <h4>Error de Compilación:</h4>
-      <pre>{{ compilationError }}</pre>
-    </div>
-  
-    <div *ngIf="compilationResult" class="compilation-results">
-      <h3>¡Contrato "{{ compilationResult.contractName }}" Compilado Exitosamente!</h3>
-  
-      <div *ngIf="compilationResult.warnings && compilationResult.warnings.length > 0" class="status-message warnings-message">
-          <h4>Advertencias:</h4>
-          <pre *ngFor="let warning of compilationResult.warnings">{{ warning }}</pre>
-      </div>
-  
-      <div class="result-item">
-        <h4>ABI:</h4>
-        <textarea readonly rows="10" class="code-display">{{ compilationResult.abi | json }}</textarea>
-      </div>
-      <div class="result-item">
-        <h4>Bytecode:</h4>
-        <textarea readonly rows="5" class="code-display bytecode-display">{{ compilationResult.bytecode }}</textarea>
-      </div>
-  
-      </div>
-  
-    <app-form></app-form>
-  
-  </section>
+  </div>
+
+  <app-form></app-form>
+
+</section>

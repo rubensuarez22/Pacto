@@ -1,176 +1,81 @@
 // src/app/core/services/compiler.service.ts
 import { Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
-// Declara 'solc' como una variable global que TypeScript reconocerá.
-// Esto asume que solc.js se carga globalmente a través de angular.json.
-declare var solc: any;
-
-// Interfaces para una mejor estructura de datos (opcional pero recomendado)
-interface SolcInputSource {
-  content: string;
-}
-
-interface SolcInputSources {
-  [contractName: string]: SolcInputSource;
-}
-
-interface SolcInput {
-  language: 'Solidity';
-  sources: SolcInputSources;
-  settings: {
-    outputSelection: {
-      '*': {
-        '*': string[]; // e.g., ['abi', 'evm.bytecode.object']
-      };
-    };
-    optimizer?: {
-        enabled: boolean;
-        runs: number;
-    };
-  };
-}
-
-interface SolcOutputContract {
-  abi: any[];
-  evm: {
-    bytecode: {
-      object: string;
-    };
-  };
-}
-
-interface SolcOutputError {
-    severity: string;
-    formattedMessage: string;
-    component: string;
-    message: string;
-    type: string;
-}
-
-interface SolcOutput {
-  errors?: SolcOutputError[];
-  contracts?: {
-    [fileName: string]: {
-      [contractName: string]: SolcOutputContract;
-    };
-  };
-}
-
+// Interfaz para el resultado esperado de la compilación
 export interface CompilationResult {
   abi: any[];
   bytecode: string;
-  contractName: string; // El nombre del contrato compilado
+  contractName: string;
   warnings?: string[];
+  // Para manejar errores específicos del backend si vienen en el cuerpo JSON
+  message?: string; // Mensaje general (éxito o error)
+  errors?: string;  // Errores de compilación específicos como una cadena
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class CompilerService {
+  // URL de tu servidor Node.js local para compilación
+  private compileServerUrl = 'http://localhost:3000/compile';
 
-  constructor() {
-    if (typeof solc !== 'undefined' && solc.version) {
-      console.log('CompilerService Constructor: Solc.js cargado. Versión:', solc.version());
-    } else {
-      console.error('CompilerService Constructor: Solc.js NO está cargado o no tiene el método version(). Verifica la carga del script global.');
-      // Puedes intentar verificarlo después de un pequeño retraso, aunque no es ideal:
-      setTimeout(() => {
-        if (typeof solc !== 'undefined' && solc.version) {
-          console.log('CompilerService Constructor (after delay): Solc.js cargado. Versión:', solc.version());
-        } else {
-          console.error('CompilerService Constructor (after delay): Solc.js SIGUE sin cargarse.');
-        }
-      }, 2000); // Espera 2 segundos
-    }
-  }
+  constructor(private http: HttpClient) {}
 
-  async compile(fileName: string, sourceCode: string): Promise<CompilationResult> {
-    if (typeof solc === 'undefined') {
-      throw new Error('Solc-js no está cargado. No se puede compilar.');
-    }
+  /**
+   * Envía el código fuente de Solidity y el nombre del archivo al backend local para compilación.
+   * @param fileName El nombre del archivo .sol (ej. "MiContrato.sol")
+   * @param sourceCode El contenido completo del archivo .sol como una cadena
+   * @returns Un Observable con el resultado de la compilación o un error.
+   */
+  compile(fileName: string, sourceCode: string): Observable<CompilationResult> {
+    console.log(`CompilerService: Enviando ${fileName} para compilar al servidor Node.js en ${this.compileServerUrl}...`);
 
-    console.log(`Compilando ${fileName}...`);
+    const payload = {
+      fileName: fileName,
+      sourceCode: sourceCode,
+    };
 
-    const input: SolcInput = {
-      language: 'Solidity',
-      sources: {
-        [fileName]: { // Usamos el nombre de archivo como clave para las fuentes
-          content: sourceCode
-        }
-      },
-      settings: {
-        outputSelection: {
-          '*': {
-            '*': ['abi', 'evm.bytecode.object'] // Solicitamos ABI y Bytecode
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+      }),
+    };
+
+    return this.http.post<CompilationResult>(this.compileServerUrl, payload, httpOptions)
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          console.error('CompilerService: Error al llamar al servidor de compilación:', error);
+          
+          let errorMessage = 'Error desconocido durante la compilación remota.';
+          
+          if (error.error instanceof ErrorEvent) {
+            // Error del lado del cliente o de red.
+            errorMessage = `Error de cliente/red: ${error.error.message}`;
+          } else if (error.error && typeof error.error === 'object') {
+            // El backend devolvió un código de error y un cuerpo JSON.
+            if (error.error.message && error.error.errors) {
+              // Errores de compilación específicos devueltos por nuestro backend
+              errorMessage = `${error.error.message}\nDetalles: ${error.error.errors}`;
+            } else if (error.error.error) {
+              // Error general del backend (ej. el string que enviamos con res.status(500).send())
+              errorMessage = `Error del servidor: ${error.error.error}`;
+            } else if (error.error.message) {
+               errorMessage = `Respuesta del servidor: ${error.error.message}`;
+            } else if (typeof error.error === 'string') {
+              // A veces el cuerpo del error es solo una cadena
+              errorMessage = `Error del servidor: ${error.error}`;
+            }
+          } else if (error.message) {
+            // Otros errores HTTP (ej. si el servidor no está corriendo, error.message podría ser útil)
+            errorMessage = `Error HTTP: ${error.status} - ${error.message}`;
           }
-        },
-        optimizer: { // Opcional: optimizador
-            enabled: true,
-            runs: 200
-        }
-      }
-    };
-
-    // solc.compile espera una cadena JSON como entrada
-    const outputJson = solc.compile(JSON.stringify(input));
-    const output: SolcOutput = JSON.parse(outputJson);
-
-    const errors = output.errors?.filter(err => err.severity === 'error') || [];
-    const warnings = output.errors?.filter(err => err.severity === 'warning') || [];
-
-    if (errors.length > 0) {
-      const errorMessages = errors.map(err => err.formattedMessage).join('\n');
-      console.error('Errores de compilación:\n', errorMessages);
-      throw new Error(`Errores de compilación:\n${errorMessages}`);
-    }
-
-    const compilationWarnings = warnings.map(warn => warn.formattedMessage);
-    if (compilationWarnings.length > 0) {
-        console.warn('Advertencias de compilación:\n', compilationWarnings.join('\n'));
-    }
-
-    if (!output.contracts || !output.contracts[fileName]) {
-      console.error('Output de compilación:', output);
-      throw new Error('No se encontraron contratos compilados para el archivo proporcionado.');
-    }
-
-    const compiledContracts = output.contracts[fileName];
-    const contractNames = Object.keys(compiledContracts);
-
-    if (contractNames.length === 0) {
-      throw new Error('El archivo .sol no contiene ningún contrato.');
-    }
-
-    // Asumimos que el contrato principal tiene el mismo nombre que el archivo (sin .sol)
-    // o tomamos el primer contrato si hay varios.
-    // Una UI más avanzada podría permitir al usuario seleccionar cuál compilar.
-    const mainContractNameFromFile = fileName.replace(/\.sol$/i, '');
-    let contractName = mainContractNameFromFile;
-    if (!compiledContracts[contractName]) {
-        // Si el nombre derivado del archivo no existe como contrato, toma el primero.
-        console.warn(`Contrato "${contractName}" no encontrado, usando el primer contrato del archivo: ${contractNames[0]}`);
-        contractName = contractNames[0];
-    }
-
-
-    const contract = compiledContracts[contractName];
-    if (!contract) {
-      throw new Error(`No se pudo encontrar la definición del contrato "${contractName}" en el archivo compilado.`);
-    }
-
-    const abi = contract.abi;
-    const bytecode = contract.evm?.bytecode?.object;
-
-    if (!abi || !bytecode) {
-      throw new Error(`ABI o Bytecode no se generaron para el contrato "${contractName}".`);
-    }
-
-    console.log(`Compilación exitosa para el contrato: ${contractName}`);
-    return {
-      abi,
-      bytecode: '0x' + bytecode, // El bytecode usualmente se usa con el prefijo 0x
-      contractName: contractName,
-      warnings: compilationWarnings.length > 0 ? compilationWarnings : undefined
-    };
+          
+          // Devuelve un nuevo observable que emite el error para que el componente lo maneje.
+          return throwError(() => new Error(errorMessage));
+        })
+      );
   }
 }

@@ -40,12 +40,6 @@
             ],
             "styles": [
               "src/styles.css"
-            ],
-            "scripts": [
-              "node_modules/solc/solc.js"
-            ],
-            "allowedCommonJsDependencies": [
-              "solc"
             ]
           },
           "configurations": {
