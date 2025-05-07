@@ -1,24 +1,42 @@
 <div class="card-header">
-    <h3 class="card-title" title="{{ contract.title }}">{{ contract.title }}</h3>
+    <h3 class="card-title" title="{{ contract.name }}">{{ contract.name }}</h3>
     <div class="card-actions">
         <button class="icon-btn" title="Copiar Dirección" (click)="onCopyAddressClick($event)">
             <img src="assets/icons/download.svg" alt="Copiar">
         </button>
-        <button class="icon-btn" title="Compartir" (click)="onShareClick($event)">
+        <!-- <button class="icon-btn" title="Compartir" (click)="onShareClick($event)">
             <img src="/assets/icons/share.svg" alt="Compartir">
-        </button>
+        </button> -->
     </div>
 </div>
 
-<div class="card-status">
+<!-- <div class="card-status">
     <span class="status-badge" [ngClass]="getStatusClass(contract.status)">
         {{ contract.status }}
     </span>
-</div>
+</div> -->
 
 <div class="card-details">
-    <p>{{ contract.date }}</p>
-    <p class="address" title="{{ contract.address }}">{{ contract.address }}</p>
+    <!-- <p *ngIf="contract.date">Creado el {{ contract.date }}</p> -->
+    <p class="address" title="{{ contract.contractAddress }}">{{ truncateAddress(contract.contractAddress) }}</p>
+    <p *ngIf="contract.description" class="description" title="{{ contract.description }}">
+        {{ contract.description }}
+    </p>
 </div>
 
-<button class="btn-details" type="button" (click)="onViewDetailsClick()">Ver Detalles</button>
+<div class="read-results" *ngIf="isLoadingDetails || readError || hasReadData">
+    <hr>
+    <div *ngIf="isLoadingDetails" class="loading-details">Consultando blockchain...</div>
+    <div *ngIf="readError" class="error-details">Error al leer: {{ readError }}</div>
+    <div *ngIf="!isLoadingDetails && !readError">
+        <h4>Datos On-Chain:</h4>
+        <div *ngIf="readData['myNumber'] !== undefined">
+            <strong>Número Guardado:</strong> {{ readData['myNumber'] }}
+        </div>
+    </div>
+</div>
+
+
+<button class="btn-details" type="button" (click)="onViewDetailsClick()">
+    {{ isLoadingDetails ? 'Consultando...' : (hasReadData ? 'Actualizar Datos' : 'Ver DetallesLeer Datos') }}
+</button>
