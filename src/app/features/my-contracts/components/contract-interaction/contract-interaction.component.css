@@ -1,0 +1,285 @@
+/* Estilos para el componente ContractInteractionComponent (contenido del modal) */
+:host {
+    display: block;
+    /* Asegura que el componente ocupe espacio */
+    font-family: 'Oxanium', sans-serif;
+    /* Aplica fuente base */
+    max-height: 85vh;
+    /* Limita altura máxima dentro del modal */
+}
+
+.contract-interaction-container {
+    color: #cccccc;
+    /* Color de texto por defecto */
+    padding-bottom: 10px;
+    /* Un poco de espacio al final antes de los botones del modal */
+}
+
+/* Estilo para el Título H2 (si no usas mat-dialog-title) */
+h2 {
+    color: #ffffff;
+    font-family: 'Oxanium', sans-serif;
+    font-size: 1.5rem;
+    /* Ajusta tamaño para el modal */
+    border-bottom: 1px solid rgba(90, 58, 126, 0.5);
+    padding-bottom: 15px;
+    margin-top: 0;
+    /* Quita espacio superior */
+    margin-bottom: 20px;
+}
+
+/* Estilo para Títulos de Sección (h3) */
+h3 {
+    color: #ffffff;
+    font-family: 'Oxanium', sans-serif;
+    margin-top: 25px;
+    /* Espacio antes de cada sección */
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(90, 58, 126, 0.2);
+    padding-bottom: 8px;
+}
+
+/* Quitar margen superior del primer h3 */
+h3:first-of-type {
+    margin-top: 0;
+}
+
+
+/* Información básica del contrato */
+.contract-info {
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.contract-info strong {
+    color: #dedede;
+}
+
+.contract-info code {
+    background-color: rgba(0, 0, 0, 0.3);
+    /* Fondo más oscuro para código */
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.9em;
+    /* Ligeramente más pequeño */
+    color: #a0a0a0;
+    /* Color grisáceo */
+    word-break: break-all;
+    /* Romper direcciones largas */
+}
+
+/* Mensaje cuando no hay funciones */
+.no-functions {
+    color: #a0a0a0;
+    font-style: italic;
+    padding: 20px 0;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+/* Lista de funciones */
+.function-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    /* Espacio entre cada función */
+}
+
+/* Item individual de función */
+.function-item {
+    background-color: rgba(42, 26, 64, 0.15);
+    /* Fondo muy sutil */
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(90, 58, 126, 0.3);
+}
+
+/* Diferenciar visualmente lectura y escritura */
+.read-item {
+    border-left: 3px solid #AD1AAF;
+    /* Borde izquierdo morado para lectura */
+}
+
+.write-item {
+    border-left: 3px solid #AD1AAF;
+    /* Borde izquierdo magenta para escritura */
+}
+
+/* Cabecera de cada función (nombre y botón) */
+.function-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 12px;
+    /* Espacio antes de inputs o resultado */
+}
+
+.function-name {
+    font: 'Oxanium', sans-serif;
+    font-weight: 600;
+    color: #e0e0e0;
+    font-size: 1rem;
+    font-family: 'Oxanium', sans-serif;
+
+    /* Mostrar nombres de función monoespaciados */
+}
+
+/* Inputs para argumentos */
+.function-inputs {
+    margin-top: 10px;
+    margin-bottom: 15px;
+    padding-left: 15px;
+    border-left: 2px solid rgba(90, 58, 126, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    /* Espacio entre argumentos */
+}
+
+.argument-input label {
+    display: block;
+    font-size: 0.8rem;
+    color: #b0b0b0;
+    margin-bottom: 4px;
+    font-weight: 400;
+}
+
+.argument-input label span {
+    /* Tipo de dato */
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.argument-input input[type="text"] {
+    width: 100%;
+    padding: 8px 10px;
+    background-color: rgba(20, 12, 31, 0.6);
+    /* Fondo input */
+    border: 1px solid #5a3a7e;
+    border-radius: 5px;
+    color: #ffffff;
+    font-family: 'Oxanium', sans-serif;
+    /* O monospace si prefieres */
+    font-size: 0.9rem;
+    box-sizing: border-box;
+}
+
+.argument-input input[type="text"]:focus {
+    border-color: #AD1AAF;
+    box-shadow: 0 0 5px rgba(173, 26, 175, 0.2);
+    outline: none;
+}
+
+.argument-input input[type="text"]::placeholder {
+    color: #888888;
+    opacity: 1;
+}
+
+
+/* Input específico para valor payable */
+.payable-input label {
+    color: #f0b450;
+    /* Color diferente, ej. amarillo/naranja */
+    font-weight: 500;
+}
+
+/* Botones dentro de la tarjeta */
+.btn-read,
+.btn-write {
+    font-family: 'Oxanium', sans-serif;
+    border: 1px solid #7c5a9e;
+    color: #d0c0e0;
+    background: none;
+    padding: 6px 16px;
+    /* Ligeramente más grande que el de filtros */
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
+    white-space: nowrap;
+}
+
+.btn-read:hover:not(:disabled),
+.btn-write:hover:not(:disabled) {
+    background-color: rgba(173, 26, 175, 0.15);
+    color: #fff;
+    border-color: #a070c0;
+}
+
+.btn-read:disabled,
+.btn-write:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+/* Diferenciar botón de escritura */
+.btn-write {
+    border-color: #AD1AAF;
+    color: #ffacff;
+    /* Color magenta claro */
+}
+
+.btn-write:hover:not(:disabled) {
+    background-color: rgba(173, 26, 175, 0.25);
+    /* Un poco más opaco */
+    color: #fff;
+    border-color: #e000b0;
+}
+
+/* Área de resultados/estado */
+.function-result {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(90, 58, 126, 0.2);
+    font-size: 0.9rem;
+    min-height: 1.2em;
+    /* Espacio mínimo */
+}
+
+.loading-result {
+    color: #a0a0a0;
+    font-style: italic;
+}
+
+.error-result {
+    color: #ff8a8a;
+    font-weight: 500;
+    white-space: pre-wrap;
+}
+
+/* Rojo claro para errores */
+
+.success-result .result-label {
+    color: #b0b0b0;
+    margin-right: 8px;
+    font-size: 0.8rem;
+}
+
+.success-result .result-value {
+    color: #e0e0e0;
+    font-family: monospace;
+    word-break: break-all;
+    white-space: pre-wrap;
+    /* Permite saltos de línea */
+    display: inline-block;
+    /* Para que el code respete white-space */
+    max-width: 100%;
+    /* Evita overflow */
+}
+
+/* Estilos para acciones del modal (si usas MatDialogActions) */
+/* ::ng-deep .mat-dialog-actions { */
+/* padding-top: 20px !important; */
+/* border-top: 1px solid rgba(90, 58, 126, 0.5) !important; */
+/* } */
+
+/* Botón de cerrar (puedes usar las clases .btn .outline .small) */
+button[mat-dialog-close] {
+    /* Hereda estilos o define unos específicos */
+}

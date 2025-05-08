@@ -17,5 +17,137 @@
 
      color: #ffffff;
  }
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+ html,
+ body {
+     height: 100%;
+ }
+
+ body {
+     margin: 0;
+     font-family: Roboto, "Helvetica Neue", sans-serif;
+ }
+
+ /* En src/styles.css o src/styles.scss */
+
+ /* Clase personalizada para nuestro modal oscuro */
+ .dark-dialog-container .mat-mdc-dialog-container .mdc-dialog__surface {
+     background-color: #1f1030;
+     /* Un morado oscuro para el fondo del modal, ajústalo */
+     color: #e0e0e0;
+     /* Color de texto por defecto para el contenido */
+ }
+
+ /* Ajustes opcionales para elementos DENTRO del modal oscuro */
+
+ /* Título del diálogo */
+ .dark-dialog-container .mat-mdc-dialog-title {
+     color: #ffffff;
+     border-color: rgba(90, 58, 126, 0.5);
+     /* Color del borde inferior si lo tienes */
+ }
+
+ /* Contenido del diálogo */
+ .dark-dialog-container .mat-mdc-dialog-content {
+     color: #cccccc;
+     /* Color de texto para el contenido general */
+     /* Estilos para la barra de scroll si el contenido es largo */
+     scrollbar-width: thin;
+     scrollbar-color: #5a3a7e rgba(0, 0, 0, 0.2);
+ }
+
+ .dark-dialog-container .mat-mdc-dialog-content::-webkit-scrollbar {
+     width: 8px;
+ }
+
+ .dark-dialog-container .mat-mdc-dialog-content::-webkit-scrollbar-track {
+     background: rgba(0, 0, 0, 0.2);
+     border-radius: 4px;
+ }
+
+ .dark-dialog-container .mat-mdc-dialog-content::-webkit-scrollbar-thumb {
+     background: #5a3a7e;
+     border-radius: 4px;
+ }
+
+ .dark-dialog-container .mat-mdc-dialog-content::-webkit-scrollbar-thumb:hover {
+     background: #7c5a9e;
+ }
+
+
+ /* Acciones del diálogo (botones como Cerrar) */
+ .dark-dialog-container .mat-mdc-dialog-actions {
+     border-top: 1px solid rgba(90, 58, 126, 0.5);
+     /* Línea separadora opcional */
+     padding-top: 15px !important;
+     /* Ajusta espaciado si es necesario */
+ }
+
+ /* Asegurar que los inputs/botones dentro de este modal hereden o tengan estilos oscuros */
+ /* (Los estilos de contract-interaction.component.css deberían funcionar, */
+ /* pero puedes añadir overrides aquí si es necesario) */
+ .dark-dialog-container app-contract-interaction input[type="text"] {
+     /* background-color: rgba(20, 12, 31, 0.6) !important; */
+     /* border: 1px solid #5a3a7e !important; */
+     /* color: #ffffff !important; */
+ }
+
+ .dark-dialog-container app-contract-interaction .btn-read,
+ .dark-dialog-container app-contract-interaction .btn-write {
+     /* Asegurar contraste */
+ }
+
+ /* En src/styles.css (o styles.scss) */
+
+ /* Estilos base que quieres aplicar a TODOS los botones .btn */
+ .btn {
+     display: inline-block;
+     text-decoration: none;
+     font-family: 'Oxanium', sans-serif;
+     /* O tu fuente base */
+     font-weight: 500;
+     /* O 600 */
+     cursor: pointer;
+     border: 2px solid transparent;
+     /* Base */
+     transition: transform .2s, opacity 0.2s;
+     position: relative;
+     /* Necesario para pseudo-elementos si los usas en .btn */
+     overflow: visible;
+     /* Padding y otros estilos base */
+     padding: 0.7rem 1.4rem;
+     /* Ejemplo */
+     border-radius: 6px;
+     /* Ejemplo */
+ }
+
+ .btn:hover {
+     transform: translateY(-2px);
+     opacity: 0.85;
+ }
+
+ /* Estilo específico para botones outline */
+ .btn.outline {
+     background-color: #AD1AAF;
+     border-color: #AD1AAF;
+     /* Tu color principal */
+     color: #ffffff;
+     /* Color del texto igual al borde */
+ }
+
+ .btn.outline:hover {
+     background-color: #AD1AAF;
+     /* Fondo suave hover */
+     color: #ffffff;
+     /* Texto un poco más brillante */
+ }
+
+
+ /* Estilo para botones pequeños */
+ .btn.small {
+     font-size: 0.9rem;
+     padding: 8px 20px;
+     /* Padding más pequeño */
+ }
+
+ /* ... otros estilos globales ... */

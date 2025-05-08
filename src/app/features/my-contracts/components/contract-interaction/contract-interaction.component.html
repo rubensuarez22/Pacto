@@ -1,44 +1,83 @@
 <div class="contract-interaction-container">
-    <h2 mat-dialog-title>Interactuar con Contrato</h2>
-    <mat-dialog-content>
+    <h2 mat-dialog-title>Interactuar con: {{ contractName || contractAddress }}</h2>
+
+    <mat-dialog-content class="dialog-content">
         <p class="contract-info">
-            <strong>Nombre:</strong> {{ contractName || 'N/A' }} <br>
             <strong>Dirección:</strong> <code title="{{ contractAddress }}">{{ contractAddress }}</code>
         </p>
 
         <hr>
-        <h3>Funciones de Lectura (View/Pure)</h3>
-
+        <h3>Funciones de Lectura (View/Pure Sin Argumentos)</h3>
         <div *ngIf="readableFunctions.length === 0" class="no-functions">
-            No se encontraron funciones de solo lectura (view/pure) en el ABI.
+            No se encontraron funciones de solo lectura sin argumentos.
         </div>
-
-        <div class="function-list" *ngIf="readableFunctions.length > 0">
-            <div *ngFor="let func of readableFunctions; let i = index" class="function-item">
+        <div class="function-list read-list" *ngIf="readableFunctions.length > 0">
+            <div *ngFor="let func of readableFunctions" class="function-item read-item">
                 <div class="function-header">
-                    <strong class="function-name">{{ func.name }}</strong>
-                    <button class="btn-read" (click)="readFunction(func)" [disabled]="func.isLoading">
+                    <strong class="function-name">{{ func.name }}()</strong>
+                    <button class="btn outline small" (click)="readFunction(func)" [disabled]="func.isLoading">
                         {{ func.isLoading ? 'Leyendo...' : 'Leer' }}
                     </button>
+                </div>
+                <div class="function-result" *ngIf="func.isLoading || func.error || func.result !== undefined">
+                    <div *ngIf="func.isLoading" class="loading-result">...</div>
+                    <div *ngIf="func.error" class="error-result">Error: {{ func.error }}</div>
+                    <div *ngIf="func.result !== undefined && !func.error && !func.isLoading" class="success-result">
+                        <span class="result-label" *ngIf="func.outputs.length > 0">({{func.outputs[0].type}}) =&gt;
+                        </span>
+                        <code class="result-value">{{ formatResult(func.result) }}</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+        <h3>Funciones de Escritura (Transacciones)</h3>
+        <div *ngIf="writeableFunctions.length === 0" class="no-functions">
+            No se encontraron funciones de escritura (nonpayable/payable) en el ABI.
+        </div>
+        <div class="function-list write-list" *ngIf="writeableFunctions.length > 0">
+            <div *ngFor="let func of writeableFunctions" class="function-item write-item">
+                <div class="function-header">
+                    <strong class="function-name">{{ func.name }}</strong>
                 </div>
 
                 <div class="function-inputs" *ngIf="func.inputs.length > 0">
                     <div *ngFor="let input of func.inputs; let argIndex = index" class="argument-input">
-                        <label for="arg-{{func.name}}-{{argIndex}}">
+                        <label for="write-arg-{{func.name}}-{{argIndex}}">
                             {{ input.name || ('arg' + argIndex) }} ({{ input.type }}):
                         </label>
-                        <input type="text" id="arg-{{func.name}}-{{argIndex}}" placeholder="{{ input.type }}"
+                        <input type="text" id="write-arg-{{func.name}}-{{argIndex}}" placeholder="{{ input.type }}"
                             [value]="(functionArgs.get(func.name) || [])[argIndex]"
                             (input)="onArgumentChange(func.name, argIndex, $event)">
                     </div>
                 </div>
 
-                <div class="function-result" *ngIf="func.isLoading || func.error || func.result !== undefined">
-                    <div *ngIf="func.isLoading" class="loading-result">...</div>
-                    <div *ngIf="func.error" class="error-result">Error: {{ func.error }}</div>
-                    <div *ngIf="func.result !== undefined && !func.error && !func.isLoading" class="success-result">
-                        <span class="result-label">Resultado:</span>
-                        <code class="result-value">{{ formatResult(func.result) }}</code>
+                <div class="function-inputs" *ngIf="func.stateMutability === 'payable'">
+                    <div class="argument-input payable-input">
+                        <label for="payable-{{func.name}}">Valor (ETH):</label>
+                        <input type="text" id="payable-{{func.name}}" placeholder="Ej: 0.1"
+                            [value]="payableValue.get(func.name) || ''"
+                            (input)="onPayableValueChange(func.name, $event)">
+                    </div>
+                </div>
+
+                <div class="function-action">
+                    <button class="btn outline small" (click)="writeFunction(func)" [disabled]="func.isLoading">
+                        {{ func.isLoading ? (func.txHash ? 'Confirmando...' : 'Enviando...') : 'Enviar Transacción' }}
+                    </button>
+                </div>
+
+
+                <div class="function-result" *ngIf="func.isLoading || func.error || func.txHash || func.receipt">
+                    <div *ngIf="func.isLoading && !func.txHash" class="loading-result">Enviando a billetera...</div>
+                    <div *ngIf="func.isLoading && func.txHash" class="loading-result">Esperando confirmación (Hash: {{
+                        func.txHash.substring(0,10) }}...)</div>
+                    <div *ngIf="func.error && !func.isLoading" class="error-result">Error: {{ func.error }}</div>
+                    <div *ngIf="func.txHash && !func.error && !func.isLoading" class="success-result">
+                        <span class="result-label">Éxito! ({{ func.receipt?.status === 1 ? 'Confirmado' : 'Estado
+                            desconocido' }}) TxHash:</span>
+                        <code class="result-value" title="{{ func.txHash }}">{{ func.txHash }}</code>
                     </div>
                 </div>
             </div>

@@ -7,7 +7,7 @@ import { ContractBackendService, ContractReferenceDataForBackend, DeleteRequestP
 import { MatDialog } from '@angular/material/dialog';
 import { ContractInteractionComponent, ContractInteractionData } from '../../components/contract-interaction/contract-interaction.component'; // Ajusta ruta
 import { ContractInteractionService } from '../../../../core/services/contract-interaction.service'; // Necesitarás este servicio si haces renuncia de propiedad
-
+import { MatButtonModule } from '@angular/material/button';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -115,14 +115,14 @@ export class MyContractsComponent implements OnInit, OnDestroy { // Implementa O
 
     // Abre el modal pasando ContractInteractionComponent y los datos necesarios
     this.dialog.open<ContractInteractionComponent, ContractInteractionData>(ContractInteractionComponent, {
-      width: '700px', // Ancho del modal
-      maxWidth: '95vw', // Ancho máximo en pantallas pequeñas
-      data: { // Objeto que se inyecta en el componente del modal vía MAT_DIALOG_DATA
+      width: '700px',
+      maxWidth: '95vw',
+      panelClass: 'dark-dialog-container', // <-- AÑADE ESTA LÍNEA
+      data: {
         contractAddress: contract.contractAddress,
         contractAbi: contract.abi,
-        contractName: contract.name // Pasamos el nombre también
+        contractName: contract.name
       }
-      // Puedes añadir más configuraciones aquí (ej: panelClass para estilos)
     });
   }
 

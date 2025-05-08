@@ -10,7 +10,7 @@ import { TitleComponent } from './components/title/title.component';
 import { ToolbarComponent } from './components/toolbar/toolbar.component';
 import { ContractInteractionComponent } from './components/contract-interaction/contract-interaction.component';
 import { MatDialogModule } from '@angular/material/dialog';
-
+import { MatButton, MatButtonModule } from '@angular/material/button';
 
 @NgModule({
   declarations: [
@@ -27,6 +27,7 @@ import { MatDialogModule } from '@angular/material/dialog';
     CommonModule,
     MyContractsRoutingModule,
     MatDialogModule,
+    MatButton,
   ],
   exports: [
 
