@@ -138,7 +138,7 @@ export class ContractCardComponent {
         // Notificación más discreta para copiar dirección
         Swal.fire({
             toast: true,
-            position: 'top-end',
+            position: 'bottom-end',
             icon: 'success',
             title: 'Dirección copiada',
             showConfirmButton: false,
