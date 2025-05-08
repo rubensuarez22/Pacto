@@ -138,26 +138,30 @@
 }
 
 .btn-details {
-    width: 100%;
+    width: 50%;
     padding: 12px 15px;
     font-family: 'Oxanium', sans-serif;
     font-weight: 600;
     font-size: 0.95rem;
+    justify-content: center;
     color: #ffffff;
     background: #AD1AAF;
     /* Morado principal */
-    border: none;
+    border: 20px;
     border-radius: 8px;
+    border-left: 10px;
     cursor: pointer;
     text-align: center;
     transition: background-color 0.3s ease, transform 0.2s ease;
-    margin-top: auto;
+    display: inline-block;
+    flex-wrap: wrap;
     /* Empuja el botón hacia abajo para llenar el espacio */
 }
 
 /* --- Estilos para los botones al pie --- */
 .card-footer-actions {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     /* O 'flex-end' o 'center' según prefieras */
     gap: 15px;
