@@ -1,9 +1,14 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { Subscription } from 'rxjs'; // Importante para manejar suscripciones
 
 // Importa los servicios y la interfaz necesarios (ajusta las rutas si es necesario)
 import { WalletService } from '../../../../core/services/wallet.service';
-import { ContractBackendService, ContractReferenceDataForBackend } from '../../../../core/services/contract-backend.service';
+import { ContractBackendService, ContractReferenceDataForBackend, DeleteRequestPayload } from '../../../../core/services/contract-backend.service';
+import { MatDialog } from '@angular/material/dialog';
+import { ContractInteractionComponent, ContractInteractionData } from '../../components/contract-interaction/contract-interaction.component'; // Ajusta ruta
+import { ContractInteractionService } from '../../../../core/services/contract-interaction.service'; // Necesitarás este servicio si haces renuncia de propiedad
+
+import Swal from 'sweetalert2';
 
 @Component({
   standalone: false,
@@ -18,7 +23,7 @@ export class MyContractsComponent implements OnInit, OnDestroy { // Implementa O
   isLoading = true; // Empezamos asumiendo que cargará algo
   userAddress: string | null = null;
   errorMessage: string | null = null; // Para mostrar errores al usuario
-
+  private deleteSubscription: Subscription | null = null;
   // Variables para guardar las suscripciones y poder cancelarlas después
   private walletSubscription: Subscription | null = null;
   private contractsSubscription: Subscription | null = null;
@@ -26,7 +31,9 @@ export class MyContractsComponent implements OnInit, OnDestroy { // Implementa O
   // Inyecta los servicios en el constructor
   constructor(
     private walletService: WalletService,
-    private contractBackendService: ContractBackendService
+    private contractBackendService: ContractBackendService,
+    public dialog: MatDialog, // Inyecta el servicio de Dialog
+    private ngZone: NgZone
   ) { }
 
   ngOnInit(): void {
@@ -94,6 +101,117 @@ export class MyContractsComponent implements OnInit, OnDestroy { // Implementa O
           this.errorMessage = err.message || "Ocurrió un error inesperado al cargar los contratos.";
           this.isLoading = false; // Terminamos de cargar (con error)
           this.contracts = []; // Aseguramos que no se muestren contratos viejos
+        }
+      });
+  }
+  // 3. Implementa el handler para el evento (interact)
+  handleInteract(contract: ContractReferenceDataForBackend): void {
+    if (!contract.abi || contract.abi.length === 0) {
+      Swal.fire('Error', 'El ABI para este contrato no está disponible.', 'error');
+      return;
+    }
+
+    console.log(`Abriendo modal de interacción para ${contract.name} (${contract.contractAddress})`);
+
+    // Abre el modal pasando ContractInteractionComponent y los datos necesarios
+    this.dialog.open<ContractInteractionComponent, ContractInteractionData>(ContractInteractionComponent, {
+      width: '700px', // Ancho del modal
+      maxWidth: '95vw', // Ancho máximo en pantallas pequeñas
+      data: { // Objeto que se inyecta en el componente del modal vía MAT_DIALOG_DATA
+        contractAddress: contract.contractAddress,
+        contractAbi: contract.abi,
+        contractName: contract.name // Pasamos el nombre también
+      }
+      // Puedes añadir más configuraciones aquí (ej: panelClass para estilos)
+    });
+  }
+
+  async handleDeleteRequest(contractToDelete: ContractReferenceDataForBackend): Promise<void> {
+    console.log('Recibida solicitud para borrar:', contractToDelete);
+    console.log('>>> DELETE_DEBUG: 3. handleDeleteRequest llamado en MyContractsComponent con:', contractToDelete); // <-- AÑADIR
+    console.log('>>> DELETE_DEBUG: 3a. Mostrando Swal de confirmación...')
+    // 1. Confirmación MUY CLARA al usuario
+    const confirmation = await Swal.fire({
+      title: `¿Borrar "${contractToDelete.name}"?`,
+      html: `Estás a punto de eliminar la referencia a este contrato de tu lista en PACTO.<br><br>
+             <strong style="color: yellow;">IMPORTANTE:</strong> Esta acción <strong>NO</strong> borra el contrato de la blockchain (es inmutable). Simplemente desaparecerá de tu vista en esta aplicación.<br><br>
+             ¿Estás seguro?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, borrar referencia',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#d33', // Color rojo para borrar
+      cancelButtonColor: '#3085d6',
+      background: 'rgba(42, 26, 64, 0.95)', // Fondo oscuro
+      color: '#ffffff', // Texto blanco
+    });
+
+    if (!confirmation.isConfirmed) {
+      console.log('>>> DELETE_DEBUG: 3b. Borrado cancelado en Swal.')
+      console.log('Borrado cancelado por el usuario.');
+      return; // Usuario canceló
+    }
+    console.log('>>> DELETE_DEBUG: 3c. Swal confirmado.');
+
+    // 2. Obtener signer y firmar mensaje de autorización
+    console.log('>>> DELETE_DEBUG: 3d. Obteniendo signer...')
+    let signer = await this.walletService.signer
+    const currentUserAddress = this.walletService.getCurrentAddress();
+
+    // Comprobación adicional de seguridad
+    if (!signer || !currentUserAddress) {
+      Swal.fire('Error', 'No se pudo obtener la billetera conectada para firmar.', 'error');
+      return;
+    }
+    if (!contractToDelete.firestoreId) {
+      Swal.fire('Error Interno', 'No se pudo obtener el ID de la referencia a borrar.', 'error');
+      return;
+    }
+    console.log('>>> DELETE_DEBUG: 3f. Signer y datos OK.');
+
+    const messageToSign = `Confirmo la eliminación de la referencia del contrato con ID: ${contractToDelete.firestoreId}`;
+    let signature;
+    try {
+      console.log('>>> DELETE_DEBUG: 3g. Solicitando firma del mensaje...'); // <-- AÑADIR
+
+      console.log('Solicitando firma para borrar...');
+      signature = await signer.signMessage(messageToSign);
+    } catch (signError: any) {
+      console.error("Error al firmar mensaje de borrado:", signError);
+      let signErrorMessage = 'La firma del mensaje fue cancelada o falló.';
+      if (signError.code === 4001 || signError.code === "ACTION_REJECTED") {
+        signErrorMessage = "Rechazaste la firma del mensaje en tu billetera.";
+      }
+      Swal.fire('Firma Requerida', signErrorMessage, 'warning');
+      return;
+    }
+
+    // 3. Preparar y llamar al backend para borrar
+    const payload: DeleteRequestPayload = {
+      signedMessage: messageToSign,
+      signature: signature,
+      userAddress: currentUserAddress // Dirección que firmó
+    };
+
+    this.deleteSubscription?.unsubscribe(); // Cancela borrado anterior si lo hubiera
+
+    console.log(`Llamando a backend para borrar doc ID: ${contractToDelete.firestoreId}`);
+    this.deleteSubscription = this.contractBackendService.deleteContractReference(contractToDelete.firestoreId, payload)
+      .subscribe({
+        next: (response) => {
+          this.ngZone.run(() => { // Asegura actualización de UI
+            console.log('Respuesta del borrado:', response.message);
+            Swal.fire('¡Eliminado!', 'La referencia del contrato ha sido eliminada de tu lista.', 'success');
+            // Elimina el contrato de la lista local para actualizar la UI inmediatamente
+            this.contracts = this.contracts.filter(c => c.firestoreId !== contractToDelete.firestoreId);
+            // O podrías volver a llamar a loadContractsForUser(this.userAddress!) si prefieres recargar desde el backend
+          });
+        },
+        error: (error: Error) => {
+          this.ngZone.run(() => { // Asegura actualización de UI
+            console.error('Error al borrar referencia vía backend:', error);
+            Swal.fire('Error', `No se pudo borrar la referencia: ${error.message}`, 'error');
+          });
         }
       });
   }

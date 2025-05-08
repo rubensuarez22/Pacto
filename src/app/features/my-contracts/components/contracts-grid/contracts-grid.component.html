@@ -3,7 +3,9 @@
 </div>
 
 <div class="contracts-grid" *ngIf="!isLoading && contracts.length > 0; else emptyStateBlock">
-    <app-contract-card *ngFor="let contract of contracts; trackBy: trackByContractId" [contract]="contract">
+    <app-contract-card *ngFor="let contract of contracts; trackBy: trackByContractId" [contract]="contract"
+        (interact)="interact.emit($event)" (deleteRequest)="relayDeleteRequest($event)">
+
     </app-contract-card>
 </div>
 

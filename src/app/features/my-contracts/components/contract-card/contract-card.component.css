@@ -155,6 +155,29 @@
     /* Empuja el botón hacia abajo para llenar el espacio */
 }
 
+/* --- Estilos para los botones al pie --- */
+.card-footer-actions {
+    display: flex;
+    justify-content: space-between;
+    /* O 'flex-end' o 'center' según prefieras */
+    gap: 15px;
+    /* Espacio entre los botones */
+    margin-top: auto;
+    /* Empuja esta sección hacia abajo si la tarjeta tiene espacio extra */
+    padding-top: 20px;
+    /* Espacio sobre los botones */
+    border-top: 1px solid rgba(90, 58, 126, 0.3);
+    /* Línea separadora opcional */
+}
+
+/* Ajusta el tamaño/padding de los botones si quieres que sean más pequeños aquí */
+.card-footer-actions .btn.small {
+    padding: 8px 20px;
+    /* Padding más pequeño */
+    font-size: 0.9rem;
+    /* Fuente más pequeña */
+}
+
 .btn-details:hover {
     background-color: #c53ccb;
     transform: translateY(-1px);

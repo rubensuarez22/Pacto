@@ -1,0 +1,51 @@
+<div class="contract-interaction-container">
+    <h2 mat-dialog-title>Interactuar con Contrato</h2>
+    <mat-dialog-content>
+        <p class="contract-info">
+            <strong>Nombre:</strong> {{ contractName || 'N/A' }} <br>
+            <strong>Dirección:</strong> <code title="{{ contractAddress }}">{{ contractAddress }}</code>
+        </p>
+
+        <hr>
+        <h3>Funciones de Lectura (View/Pure)</h3>
+
+        <div *ngIf="readableFunctions.length === 0" class="no-functions">
+            No se encontraron funciones de solo lectura (view/pure) en el ABI.
+        </div>
+
+        <div class="function-list" *ngIf="readableFunctions.length > 0">
+            <div *ngFor="let func of readableFunctions; let i = index" class="function-item">
+                <div class="function-header">
+                    <strong class="function-name">{{ func.name }}</strong>
+                    <button class="btn-read" (click)="readFunction(func)" [disabled]="func.isLoading">
+                        {{ func.isLoading ? 'Leyendo...' : 'Leer' }}
+                    </button>
+                </div>
+
+                <div class="function-inputs" *ngIf="func.inputs.length > 0">
+                    <div *ngFor="let input of func.inputs; let argIndex = index" class="argument-input">
+                        <label for="arg-{{func.name}}-{{argIndex}}">
+                            {{ input.name || ('arg' + argIndex) }} ({{ input.type }}):
+                        </label>
+                        <input type="text" id="arg-{{func.name}}-{{argIndex}}" placeholder="{{ input.type }}"
+                            [value]="(functionArgs.get(func.name) || [])[argIndex]"
+                            (input)="onArgumentChange(func.name, argIndex, $event)">
+                    </div>
+                </div>
+
+                <div class="function-result" *ngIf="func.isLoading || func.error || func.result !== undefined">
+                    <div *ngIf="func.isLoading" class="loading-result">...</div>
+                    <div *ngIf="func.error" class="error-result">Error: {{ func.error }}</div>
+                    <div *ngIf="func.result !== undefined && !func.error && !func.isLoading" class="success-result">
+                        <span class="result-label">Resultado:</span>
+                        <code class="result-value">{{ formatResult(func.result) }}</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+        <button class="btn outline small" mat-dialog-close>Cerrar</button>
+    </mat-dialog-actions>
+</div>

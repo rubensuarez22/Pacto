@@ -2,6 +2,8 @@
     <div class="container">
         <app-title></app-title>
         <app-toolbar></app-toolbar>
-        <app-contracts-grid [contracts]="contracts" [isLoading]="isLoading"></app-contracts-grid>
+        <app-contracts-grid *ngIf="!errorMessage" [contracts]="contracts" [isLoading]="isLoading"
+            (interact)="handleInteract($event)" (deleteRequest)="handleDeleteRequest($event)">
+        </app-contracts-grid>
     </div>
 </section>

@@ -5,6 +5,9 @@
     <div class="card-actions">
       <button class="icon-btn" title="Copiar Dirección" (click)="onCopyAddressClick($event)">
         <img src="assets/icons/copy.svg" alt="Copiar"> </button>
+      <button class="icon-btn" title="Borrar Referencia" (click)="onDeleteRequest($event)">
+        <img src="/assets/icons/delete.svg" alt="Borrar">
+      </button>
     </div>
   </div>
 
@@ -19,5 +22,8 @@
 
   <button class="btn-details" type="button" (click)="onViewDetailsClick()">
     Ver Detalles </button>
+  <button class="btn-details" type="button" (click)="onInteractClick()">
+    Interactuar
+  </button>
 
 </div>

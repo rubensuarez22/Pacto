@@ -19,7 +19,9 @@ export class ContractCardComponent {
   // Eventos que la tarjeta puede emitir
   @Output() viewDetails = new EventEmitter<ContractReferenceDataForBackend>(); // Lo mantenemos por si acaso
   @Output() copyAddress = new EventEmitter<string>();
-  // @Output() shareContract = new EventEmitter<ContractReferenceDataForBackend>();
+  @Output() interact = new EventEmitter<ContractReferenceDataForBackend>();
+
+  @Output() deleteRequest = new EventEmitter<ContractReferenceDataForBackend>(); // Evento para solicitar borrado
 
   // Propiedades para datos on-chain (se mantienen para futura implementación)
   readData: { [key: string]: any } = {};
@@ -30,8 +32,15 @@ export class ContractCardComponent {
   // showFullDetails: boolean = false;
 
   constructor(private datePipe: DatePipe) { } // Inyecta DatePipe
-
   // --- Action Handlers ---
+  onDeleteRequest(event: MouseEvent): void {
+    event.stopPropagation(); // Evita disparar otros clicks
+    console.log('Solicitud de borrado para:', this.contract.contractAddress);
+    console.log('>>> DELETE_DEBUG: 1. onDeleteRequest llamado en ContractCardComponent'); // <-- AÑADIR
+    console.log('>>> DELETE_DEBUG: 1a. Emitiendo deleteRequest con:', this.contract); // <-- AÑADIR
+
+    this.deleteRequest.emit(this.contract); // Emite el contrato completo (incluye ID de Firestore si lo añadiste)
+  }
 
   onViewDetailsClick(): void {
     console.log('Ver Detalles (Pop-up) para:', this.contract.contractAddress);
@@ -112,10 +121,10 @@ export class ContractCardComponent {
             if (this.contract.abi) {
               navigator.clipboard.writeText(JSON.stringify(this.contract.abi, null, 2))
                 .then(() => {
-                   // Cambiar texto del botón temporalmente
-                   copyBtn.textContent = '¡Copiado!';
-                   setTimeout(() => { copyBtn.textContent = 'Copiar ABI'; }, 1500);
-                 })
+                  // Cambiar texto del botón temporalmente
+                  copyBtn.textContent = '¡Copiado!';
+                  setTimeout(() => { copyBtn.textContent = 'Copiar ABI'; }, 1500);
+                })
                 .catch(err => console.error('Error al copiar ABI:', err));
             }
           });
@@ -125,6 +134,14 @@ export class ContractCardComponent {
 
     // Lógica futura para cargar datos on-chain podría ir aquí
     // this.loadContractDetails();
+  }
+
+  // NUEVO: Método para el botón "Interactuar"
+  onInteractClick(): void {
+    console.log('Solicitando Interacción On-Chain para:', this.contract.contractAddress);
+    // Emite el evento con los datos del contrato (incluyendo ABI)
+    // El componente padre (MyContractsComponent) escuchará este evento
+    this.interact.emit(this.contract);
   }
 
   onCopyAddressClick(event: MouseEvent): void {
@@ -137,15 +154,15 @@ export class ContractCardComponent {
         this.copyAddress.emit(this.contract.contractAddress);
         // Notificación más discreta para copiar dirección
         Swal.fire({
-            toast: true,
-            position: 'bottom-end',
-            icon: 'success',
-            title: 'Dirección copiada',
-            showConfirmButton: false,
-            timer: 1500,
-            timerProgressBar: true,
-            background: '#333', // Fondo oscuro para toast
-            color: '#fff'       // Texto blanco para toast
+          toast: true,
+          position: 'bottom-end',
+          icon: 'success',
+          title: 'Dirección copiada',
+          showConfirmButton: false,
+          timer: 1500,
+          timerProgressBar: true,
+          background: '#333', // Fondo oscuro para toast
+          color: '#fff'       // Texto blanco para toast
         });
       })
       .catch(err => {
@@ -171,4 +188,6 @@ export class ContractCardComponent {
     const result = key.replace(/([A-Z])/g, " $1");
     return result.charAt(0).toUpperCase() + result.slice(1);
   }
+  getStatusClass(status?: string): string { /* ... */ const valid = ['active', 'pending', 'finished']; return status && valid.includes(status) ? status : 'unknown'; }
+
 }

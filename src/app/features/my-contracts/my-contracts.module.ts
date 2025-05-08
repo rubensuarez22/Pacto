@@ -8,6 +8,8 @@ import { ContractCardComponent } from './components/contract-card/contract-card.
 import { MyContractsComponent } from './components/my-contracts/my-contracts.component';
 import { TitleComponent } from './components/title/title.component';
 import { ToolbarComponent } from './components/toolbar/toolbar.component';
+import { ContractInteractionComponent } from './components/contract-interaction/contract-interaction.component';
+import { MatDialogModule } from '@angular/material/dialog';
 
 
 @NgModule({
@@ -18,11 +20,13 @@ import { ToolbarComponent } from './components/toolbar/toolbar.component';
     ToolbarComponent,
     ContractsGridComponent,
     EmptyStateComponent,
-    ContractCardComponent
+    ContractCardComponent,
+    ContractInteractionComponent
   ],
   imports: [
     CommonModule,
-    MyContractsRoutingModule
+    MyContractsRoutingModule,
+    MatDialogModule,
   ],
   exports: [
 
